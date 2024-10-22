@@ -1,5 +1,6 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Excel;
+using DesignacoesReuniao.Infra.Pdf;
 using DesignacoesReuniao.Infra.Scraper;
 using DesignacoesReuniao.Infra.Word;
 
@@ -8,6 +9,10 @@ class Program
 {
     static void Main(string[] args)
     {
+        Environment.SetEnvironmentVariable("ITEXT_BOUNCY_CASTLE_FACTORY_NAME", "bouncy-castle");
+        PdfEditor pdfEditor = new PdfEditor();
+        pdfEditor.EditPdfForm("C:\\Users\\Douglas\\Downloads\\Sem título.pdf", @"PartesEstudantes\PartesEstudantes.pdf");
+
         // URL base do site onde a programação está disponível (exemplo fictício)
         string baseUrl = "https://wol.jw.org/pt/wol/meetings/r5/lp-t";
 

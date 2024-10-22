@@ -32,7 +32,7 @@ public class WebScraper
                 string url = $"{_baseUrl}/{year}/{week}";
                 driver.Navigate().GoToUrl(url);
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-                Reuniao reuniao = ProcessarReuniao(driver, month, year);
+                Reuniao reuniao = ProcessarReuniao(driver, month, year, week);
                 if (reuniao != null)
                 {
                     reunioes.Add(reuniao);
@@ -73,21 +73,35 @@ public class WebScraper
         return (firstWeek, lastWeek);
     }
 
-    private Reuniao ProcessarReuniao(IWebDriver driver, int month, int year)
+    private Reuniao ProcessarReuniao(IWebDriver driver, int month, int year, int week)
     {
+        DateOnly dataSemana = ObterDataDaSemana(year, week);
         string tituloSemana = ObterTituloSemana(driver);
         string leituraSemana = ObterLeituraDaSemana(driver);
         if (string.IsNullOrEmpty(tituloSemana)) return null;
 
         Reuniao reuniao = new Reuniao { 
             Semana = tituloSemana, 
-            LeituraDaSemana = leituraSemana 
+            InicioSemana = dataSemana,
+            LeituraDaSemana = leituraSemana
         };
 
         AdicionarCanticos(driver, reuniao);
         AdicionarSessoes(driver, reuniao, month, year);
 
         return reuniao;
+    }
+
+    public static DateOnly ObterDataDaSemana(int ano, int semanaDoAno)
+    {
+        DateTime primeiroDiaDoAno = new DateTime(ano, 1, 1);
+        var cultura = CultureInfo.CurrentCulture;
+        int semanaPrimeiroDia = cultura.Calendar.GetWeekOfYear(primeiroDiaDoAno, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
+
+        int diasAteSemana = (semanaDoAno - semanaPrimeiroDia) * 7;
+        DateTime dataDaSemana = primeiroDiaDoAno.AddDays(diasAteSemana);
+
+        return DateOnly.FromDateTime(dataDaSemana);
     }
 
     private string ObterTituloSemana(IWebDriver driver)
