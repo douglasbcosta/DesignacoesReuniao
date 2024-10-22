@@ -21,4 +21,10 @@
     <ProjectReference Include="..\DesignacoesReuniao.Infra\DesignacoesReuniao.Infra.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="S-140_T.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

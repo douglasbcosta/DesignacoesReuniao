@@ -1,4 +1,5 @@
 ﻿using DesignacoesReuniao.Domain.Models;
+using DesignacoesReuniao.Infra.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Globalization;
@@ -162,7 +163,7 @@ public class WebScraper
 
             var tempoElement = parteElement.FindElement(By.XPath("following-sibling::div//p"));
             string tempoTexto = tempoElement.Text;
-            int tempoMinutos = ExtrairTempo(tempoTexto);
+            int tempoMinutos = tempoTexto.ExtrairTempo();
 
             sessao.AdicionarParte(new Parte(indice, tituloParte, tempoMinutos));
         }
@@ -181,9 +182,4 @@ public class WebScraper
         return string.Empty;
     }
 
-    private int ExtrairTempo(string texto)
-    {
-        var match = Regex.Match(texto, @"\((\d+)\s*min\)");
-        return match.Success ? int.Parse(match.Groups[1].Value) : 0;
-    }
 }

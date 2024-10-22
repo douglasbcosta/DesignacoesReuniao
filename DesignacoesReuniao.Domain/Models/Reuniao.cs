@@ -19,5 +19,10 @@
         {
             Canticos.Add(cantico);
         }
+
+        public static string[] GetSessoesReunioes()
+        {
+            return new string[] { "TESOUROS DA PALAVRA DE DEUS", "FAÇA SEU MELHOR NO MINISTÉRIO", "NOSSA VIDA CRISTÃ" };
+        }
     }
 }

@@ -1,81 +1,104 @@
 ﻿using DesignacoesReuniao.Domain.Models;
+using DesignacoesReuniao.Infra.Constantes;
+using DesignacoesReuniao.Infra.Extensions;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DesignacoesReuniao.Infra.Word
 {
     public class WordReplacer
     {
+        
 
         public void PreencherReunioesEmModelo(string caminhoModelo, string caminhoReuniaoPreenchida, List<Reuniao> reunioes)
         {
-            FileInfo fileInfo = new FileInfo(caminhoReuniaoPreenchida);
-
-            // Verifica se o diretório existe, se não, cria o diretório
-            if (!fileInfo.Directory.Exists)
-            {
-                fileInfo.Directory.Create();
-            }
-            // Copia o template para o destino
-            File.Copy(caminhoModelo, caminhoReuniaoPreenchida, true);
+            CopiarModelo(caminhoModelo, caminhoReuniaoPreenchida);
 
             // Abre o documento Word
             using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(caminhoReuniaoPreenchida, true))
             {
                 // Obtém o corpo do documento
                 var body = wordDoc.MainDocumentPart.Document.Body;
-
-                var substituicoesPadrao = GetSubstituicoesPadrao();
-                foreach (var substituicao in substituicoesPadrao)
-                {
-                    ReplaceTodasOcorrencias(body, substituicao.Key, substituicao.Value);
-                }
-                foreach (var reuniao in reunioes)
-                {
-                    var substituicoes = GetSubstituicoes(reuniao);
-                    foreach (var substituicao in substituicoes)
-                    {
-                        if (substituicao.ValorSubstituicao.Contains("Cântico"))
-                        {
-                            ReplaceCantico(body, substituicao.ValorSubstituicao);
-                        }
-                        if (string.IsNullOrEmpty(substituicao.Sessao))
-                        {
-                            ReplacePrimeiraOcorrencia(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao);
-                        }
-                        else if (string.IsNullOrEmpty(substituicao.Tema))
-                        {
-                            ReplacePrimeiraOcorrenciaNaSessao(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao, substituicao.Sessao);
-                        }
-                        else
-                        {
-                            ReplacePrimeiraOcorrenciaNaSessaoETema(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao, substituicao.Sessao, substituicao.Tema);
-                        }
-                    }
-                }
-                RemoverLinhasComPartesVazias(body);
-                RemoverLinhasComPrimeiraCelulaVazia(body);
-                if (reunioes.Count < 5)
-                {
-                    RemoverTabelasAMais(body);
-                }
-
-                ReplaceIndices(body);
-                AjustarFormatacaoEstudantes(body);
-                // Chama o novo método para ajustar as linhas com 5 colunas
-                AjustarLarguraLinhasComCincoColunas(body);
-                // Chama o novo método para ajustar as linhas com 5 colunas
-                AjustarLarguraLinhasComQuatroColunas(body);
-                // Salva as alterações no documento
-                RetirarParagrafosComSomenteDoisPontos(body);
-                AdicionarQuebraDePagina(body);
-                AdicionarHorariosReuniao(body);
+                ReplaceGerais(body);
+                ReplaceReunioes(reunioes, body);
+                AjustarDocumento(reunioes, body);
                 wordDoc.MainDocumentPart.Document.Save();
             }
 
             Console.WriteLine($"Arquivo Word gerado com sucesso em: {caminhoReuniaoPreenchida}");
+        }
+        private static void CopiarModelo(string caminhoModelo, string caminhoReuniaoPreenchida)
+        {
+            FileInfo fileInfo = new FileInfo(caminhoReuniaoPreenchida);
+
+            if (!fileInfo.Directory.Exists)
+            {
+                fileInfo.Directory.Create();
+            }
+            File.Copy(caminhoModelo, caminhoReuniaoPreenchida, true);
+        }
+        private void ReplaceGerais(Body? body)
+        {
+            var substituicoesPadrao = Substituicao.GetSubstituicoesPadrao();
+            foreach (var substituicao in substituicoesPadrao)
+            {
+                ReplaceTodasOcorrencias(body, substituicao.Key, substituicao.Value);
+            }
+        }
+        private void ReplaceReunioes(List<Reuniao> reunioes, Body? body)
+        {
+            foreach (var reuniao in reunioes)
+            {
+                var substituicoes = GetSubstituicoes(reuniao);
+                foreach (var substituicao in substituicoes)
+                {
+                    if (substituicao.ValorSubstituicao.Contains("Cântico"))
+                    {
+                        ReplaceCantico(body, substituicao.ValorSubstituicao);
+                    }
+                    if (string.IsNullOrEmpty(substituicao.Sessao))
+                    {
+                        ReplacePrimeiraOcorrencia(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao);
+                    }
+                    else if (string.IsNullOrEmpty(substituicao.Tema))
+                    {
+                        ReplacePrimeiraOcorrenciaNaSessao(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao, substituicao.Sessao);
+                    }
+                    else
+                    {
+                        ReplacePrimeiraOcorrenciaNaSessaoETema(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao, substituicao.Sessao, substituicao.Tema);
+                    }
+                }
+            }
+        }
+
+        private void AjustarDocumento(List<Reuniao> reunioes, Body? body)
+        {
+            RemoverCoisasDesnecessarias(reunioes, body);
+            ReplaceIndices(body);
+            AjustarFormatacao(body);
+            AdicionarHorariosReuniao(body);
+        }
+
+        private void AjustarFormatacao(Body? body)
+        {
+            AjustarFormatacaoEstudantes(body);
+            AjustarLarguraLinhasColunas(body);
+            AdicionarQuebraDePagina(body);
+        }
+
+        private void RemoverCoisasDesnecessarias(List<Reuniao> reunioes, Body? body)
+        {
+            RemoverLinhasComPartesVazias(body);
+            RemoverLinhasComPrimeiraCelulaVazia(body);
+            if (reunioes.Count < 5)
+            {
+                RemoverTabelasAMais(body);
+            }
+            RemoverParagrafosComSomenteDoisPontos(body);
         }
 
         private void AdicionarHorariosReuniao(Body body)
@@ -89,7 +112,7 @@ namespace DesignacoesReuniao.Infra.Word
                 {
                     foreach (var text in run.Descendants<Text>())
                     {
-                        if (GetSessoesReunioes().Contains(text.Text))
+                        if (Reuniao.GetSessoesReunioes().Contains(text.Text))
                         {
                             sessaoAtual = text.Text;
                         }
@@ -104,10 +127,10 @@ namespace DesignacoesReuniao.Infra.Word
                             horario = horario.AddMinutes(5);
                         }
 
-                        int minutos = ExtrairTempo(text.Text);
+                        int minutos = text.Text.ExtrairTempo();
                         if (minutos > 0)
                         {
-                            if(sessaoAtual == "FAÇA SEU MELHOR NO MINISTÉRIO" && minutos <= 5) 
+                            if(sessaoAtual == Reuniao.GetSessoesReunioes()[1] && minutos <= 5) 
                             {
                                 minutos++;
                             }
@@ -123,18 +146,6 @@ namespace DesignacoesReuniao.Infra.Word
             }
         }
 
-        private int ExtrairTempo(string texto)
-        {
-            var match = Regex.Match(texto, @"\((\d+)\s*min\)");
-            if (match.Success)
-            {
-                return int.Parse(match.Groups[1].Value);
-            }
-            else
-            {
-                return 0;
-            }
-        }
         private void AdicionarQuebraDePagina(Body body)
         {
             int ocorrencias = 0;
@@ -153,7 +164,7 @@ namespace DesignacoesReuniao.Infra.Word
                             {
                                 foreach (var text in run.Descendants<Text>())
                                 {
-                                    if (text.Text.Contains("ANDORINHA DA MATA"))
+                                    if (text.Text.Contains(Constants.NomeCongregacao))
                                     {
                                         ocorrencias++;
 
@@ -179,7 +190,7 @@ namespace DesignacoesReuniao.Infra.Word
             }
         }
 
-        private void RetirarParagrafosComSomenteDoisPontos(Body body)
+        private void RemoverParagrafosComSomenteDoisPontos(Body body)
         {
             // Percorre todas as tabelas no documento
             foreach (var tabela in body.Descendants<Table>())
@@ -193,12 +204,6 @@ namespace DesignacoesReuniao.Infra.Word
                     for (int i = 0; i < celulas.Count - 1; i++)
                     {
                         var textoCelula = celulas[i].InnerText.Trim();
-                        if (textoCelula.Contains("0:00"))
-                        {
-                            int width = ObterLarguraCelula(celulas[i]);
-                            width = width + 90;
-                            AjustarLarguraCelula(celulas[i], width);
-                        }
 
                         // Verifica se a célula contém "Estudante"
                         if (textoCelula == ":")
@@ -212,7 +217,7 @@ namespace DesignacoesReuniao.Infra.Word
             }
         }
 
-       private void AjustarLarguraLinhasComCincoColunas(Body body)
+       private void AjustarLarguraLinhasColunas(Body body)
         {
             // Percorre todas as tabelas no documento
             foreach (var tabela in body.Descendants<Table>())
@@ -223,11 +228,20 @@ namespace DesignacoesReuniao.Infra.Word
                     var celulas = linha.Descendants<TableCell>().ToList();
 
                     // Verifica se a linha tem exatamente 5 colunas
-                    if (celulas.Count == 5)
+                    if (celulas.Count == 5 || celulas.Count == 4)
                     {
                         // Ajusta a largura de cada célula
                         for (int i = 0; i < celulas.Count; i++)
                         {
+                            if(i == 0)
+                            {
+                                if (celulas[i].InnerText.Contains("0:00"))
+                                {
+                                    int width = ObterLarguraCelula(celulas[i]);
+                                    width = width + 90;
+                                    AjustarLarguraCelula(celulas[i], width);
+                                }
+                            }
                             if (i == 1)
                             {
                                 // Aumenta a largura da primeira célula
@@ -243,37 +257,7 @@ namespace DesignacoesReuniao.Infra.Word
                 }
             }
         }
-        private void AjustarLarguraLinhasComQuatroColunas(Body body)
-        {
-            // Percorre todas as tabelas no documento
-            foreach (var tabela in body.Descendants<Table>())
-            {
-                // Percorre todas as linhas da tabela
-                foreach (var linha in tabela.Descendants<TableRow>())
-                {
-                    var celulas = linha.Descendants<TableCell>().ToList();
 
-                    // Verifica se a linha tem exatamente 5 colunas
-                    if (celulas.Count == 4)
-                    {
-                        // Ajusta a largura de cada célula
-                        for (int i = 0; i < celulas.Count; i++)
-                        {
-                            if (i == 1)
-                            {
-                                // Aumenta a largura da primeira célula
-                                AjustarLarguraCelula(celulas[i], 4549);
-                            }
-                            else if (i == 2)
-                            {
-                                // Aumenta a largura da segunda célula
-                                AjustarLarguraCelula(celulas[i], 49);
-                            }
-                        }
-                    }
-                }
-            }
-        }
         private void AjustarFormatacaoEstudantes(Body body)
         {
             // Percorre todas as tabelas no documento
@@ -405,7 +389,6 @@ namespace DesignacoesReuniao.Infra.Word
         private static void ReplaceIndices(Body? body)
         {
             int indice = 0;
-            Regex regexNumeracao = new Regex(@"^\d+\.$");
             // Substitui os textos conforme o dicionário de substituições
             foreach (var paragrafo in body.Descendants<Paragraph>())
             {
@@ -458,7 +441,7 @@ namespace DesignacoesReuniao.Infra.Word
                 {
                     foreach (var text in run.Descendants<Text>())
                     {
-                        if (GetSessoesReunioes().Contains(text.Text))
+                        if (Reuniao.GetSessoesReunioes().Contains(text.Text))
                         {
                             sessaoAtual = text.Text;
                         }
@@ -488,7 +471,7 @@ namespace DesignacoesReuniao.Infra.Word
                         {
                             temaAtual = text.Text;
                         }
-                        if (GetSessoesReunioes().Contains(text.Text))
+                        if (Reuniao.GetSessoesReunioes().Contains(text.Text))
                         {
                             sessaoAtual = text.Text;
                         }
@@ -528,7 +511,7 @@ namespace DesignacoesReuniao.Infra.Word
                     GerarSubstituicoesMinisterio(substiticoes, sessao, parte);
                     GerarSubstituicoesVidaCrista(substiticoes, sessao, parte);
                 }
-                if (sessao.TituloSessao == "FAÇA SEU MELHOR NO MINISTÉRIO")
+                if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[1])
                 {
                     int diferencaQtdPartes = 4 - sessao.Partes.Count;
                     for (int i = 0; i < diferencaQtdPartes; i++)
@@ -539,7 +522,7 @@ namespace DesignacoesReuniao.Infra.Word
                         substiticoes.Add(new Substituicao("Nome/Nome", "", sessao.TituloSessao));
                     }
                 }
-                if (sessao.TituloSessao == "NOSSA VIDA CRISTÃ")
+                if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[2])
                 {
                     int diferencaQtdPartes = 3 - sessao.Partes.Count;
                     for (int i = 0; i < diferencaQtdPartes; i++)
@@ -563,7 +546,7 @@ namespace DesignacoesReuniao.Infra.Word
 
         private static void GerarSubstituicoesTesouros(List<Substituicao> substiticoes, Sessao sessao, Parte parte)
         {
-            if (sessao.TituloSessao == "TESOUROS DA PALAVRA DE DEUS")
+            if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[0])
             {
                 if (parte.TituloParte.Contains("Joias espirituais"))
                 {
@@ -587,7 +570,7 @@ namespace DesignacoesReuniao.Infra.Word
 
         private static void GerarSubstituicoesMinisterio(List<Substituicao> substiticoes, Sessao sessao, Parte parte)
         {
-            if (sessao.TituloSessao == "FAÇA SEU MELHOR NO MINISTÉRIO")
+            if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[1])
             {
                 substiticoes.Add(new Substituicao("Tema", parte.TituloParte, sessao.TituloSessao));
                 substiticoes.Add(new Substituicao("(X min)", $"({parte.TempoMinutos} min)", sessao.TituloSessao));
@@ -607,7 +590,7 @@ namespace DesignacoesReuniao.Infra.Word
 
         private static void GerarSubstituicoesVidaCrista(List<Substituicao> substiticoes, Sessao sessao, Parte parte)
         {
-            if (sessao.TituloSessao == "NOSSA VIDA CRISTÃ")
+            if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[2])
             {
                 if (parte.TituloParte.Contains("Estudo bíblico de congregação"))
                 {
@@ -622,35 +605,6 @@ namespace DesignacoesReuniao.Infra.Word
                     substiticoes.Add(new Substituicao("Nome", parte.Designados.FirstOrDefault(), sessao.TituloSessao));
                 }
             }
-        }
-
-        private string[] GetSessoesReunioes()
-        {
-            return new string[] { "TESOUROS DA PALAVRA DE DEUS", "FAÇA SEU MELHOR NO MINISTÉRIO", "NOSSA VIDA CRISTÃ" };
-        }
-
-        private Dictionary<string, string> GetSubstituicoesPadrao()
-        {
-            Dictionary<string, string> substiticoes = new Dictionary<string, string>();
-
-            substiticoes.Add("[", "");
-            substiticoes.Add("]", "");
-            substiticoes.Add("NOME DA CONGREGAÇÃO", "ANDORINHA DA MATA");
-            substiticoes.Add("Conselheiro da sala B", "");
-            substiticoes.Add("Sala B", "");
-            substiticoes.Add("Dirigente/leitor", "Dirigente");
-
-            return substiticoes;
-
-        }
-
-        private string FormatarTextoComPrimeiraLetraMaiuscula(string texto)
-        {
-            if (string.IsNullOrEmpty(texto))
-            {
-                return texto;
-            }
-            return System.Text.RegularExpressions.Regex.Replace(texto.ToLower(), @"\b\w", m => m.Value.ToUpper());
         }
 
         public void RemoverLinhasComPartesVazias(Body body)
@@ -711,7 +665,7 @@ namespace DesignacoesReuniao.Infra.Word
                                         var textoProximaCelula = celulaProximaLinha.InnerText.Trim();
 
                                         // Verifica se a célula da próxima linha contém uma das palavras da lista
-                                        foreach (var palavra in GetSessoesReunioes())
+                                        foreach (var palavra in Reuniao.GetSessoesReunioes())
                                         {
                                             if (textoProximaCelula.Contains(palavra, StringComparison.OrdinalIgnoreCase))
                                             {
@@ -754,7 +708,7 @@ namespace DesignacoesReuniao.Infra.Word
                         {
                             // Verifica se a célula está vazia
                             var textoCelula = celula.InnerText.Trim();
-                            if(textoCelula.Contains("ANDORINHA DA MATA"))
+                            if(textoCelula.Contains(Constants.NomeCongregacao))
                             {
                                 ocorrencias++;
                             }

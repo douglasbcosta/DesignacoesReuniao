@@ -1,4 +1,6 @@
-﻿namespace DesignacoesReuniao.Infra.Word
+﻿using DesignacoesReuniao.Infra.Extensions;
+
+namespace DesignacoesReuniao.Infra.Word
 {
     public class Substituicao
     {
@@ -6,7 +8,7 @@
         {
             Sessao = sessao;
             ValorOriginal = valorOriginal ?? "";
-            ValorSubstituicao = valorOriginal.Contains("Nome") ? FormatarTextoComPrimeiraLetraMaiuscula(valorSubstituicao ?? "") : valorSubstituicao ?? "";
+            ValorSubstituicao = valorOriginal.Contains("Nome") ? valorSubstituicao.FormatarTextoComPrimeiraLetraMaiuscula() : valorSubstituicao ?? "";
             Tema = tema;
         }
         public string Tema { get; set; }
@@ -14,13 +16,18 @@
         public string ValorOriginal { get; set; }
         public string ValorSubstituicao { get; set; }
 
-        private string FormatarTextoComPrimeiraLetraMaiuscula(string texto)
+        public static Dictionary<string, string> GetSubstituicoesPadrao()
         {
-            if (string.IsNullOrEmpty(texto))
-            {
-                return texto;
-            }
-            return System.Text.RegularExpressions.Regex.Replace(texto.ToLower(), @"\b\w", m => m.Value.ToUpper());
+            Dictionary<string, string> substiticoes = new Dictionary<string, string>();
+
+            substiticoes.Add("[", "");
+            substiticoes.Add("]", "");
+            substiticoes.Add("NOME DA CONGREGAÇÃO", "ANDORINHA DA MATA");
+            substiticoes.Add("Conselheiro da sala B", "");
+            substiticoes.Add("Sala B", "");
+            substiticoes.Add("Dirigente/leitor", "Dirigente");
+
+            return substiticoes;
         }
     }
 }

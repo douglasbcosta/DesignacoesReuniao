@@ -1,4 +1,5 @@
 ﻿using DesignacoesReuniao.Domain.Models;
+using DesignacoesReuniao.Infra.Extensions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
@@ -261,7 +262,7 @@ namespace DesignacoesReuniao.Infra.Word
 
         private TableCell AdicionarColuna3(string coluna3)
         {
-            coluna3 = FormatarTextoComPrimeiraLetraMaiuscula(coluna3);
+            coluna3 = coluna3.FormatarTextoComPrimeiraLetraMaiuscula();
             // Cria a célula para a terceira coluna (intermediária) com espaçamento inicial
             TableCell celulaColuna3 = new TableCell(new Paragraph(new Run(new Text(coluna3))));
 
@@ -279,15 +280,6 @@ namespace DesignacoesReuniao.Infra.Word
             // Retorna a célula criada
             return celulaColuna3;
         }
-        private string FormatarTextoComPrimeiraLetraMaiuscula(string texto)
-        {
-            if (string.IsNullOrEmpty(texto))
-            {
-                return texto;
-            }
-            return System.Text.RegularExpressions.Regex.Replace(texto.ToLower(), @"\b\w", m => m.Value.ToUpper());
-        }
-
         private static TableCell AdicionarColuna2(string coluna2)
         {
             return CriarCelulaComMargem(coluna2, "2000", "0", JustificationValues.Right, "18", "808080", true);
