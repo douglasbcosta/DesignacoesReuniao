@@ -8,7 +8,7 @@ namespace DesignacoesReuniao.Infra.Extensions
         {
             if (string.IsNullOrEmpty(texto))
             {
-                return texto;
+                return "";
             }
             return Regex.Replace(texto.ToLower(), @"\b\w", m => m.Value.ToUpper());
         }

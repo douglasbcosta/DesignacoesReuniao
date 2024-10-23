@@ -10,8 +10,7 @@ class Program
     static void Main(string[] args)
     {
         Environment.SetEnvironmentVariable("ITEXT_BOUNCY_CASTLE_FACTORY_NAME", "bouncy-castle");
-        PdfEditor pdfEditor = new PdfEditor();
-        pdfEditor.EditPdfForm("C:\\Users\\Douglas\\Downloads\\Sem título.pdf", @"PartesEstudantes\PartesEstudantes.pdf");
+        
 
         // URL base do site onde a programação está disponível (exemplo fictício)
         string baseUrl = "https://wol.jw.org/pt/wol/meetings/r5/lp-t";
@@ -98,13 +97,10 @@ class Program
             }
         }
 
-        // Gera o arquivo Excel com as informações das reuniões
         ExportarReuniaoParaExcel(month, year, reunioesProgramacao, true);
-        // Gera o arquivo Word com as informações das reuniões
-
         ExportarReuniaoParaWord(month, year, reunioesProgramacao, true);
-
         PreencherReuniaoWordModelo(month, year, reunioesProgramacao);
+        PreencherPartesEstudantes(month, year, reunioesProgramacao);
 
     }
 
@@ -122,11 +118,9 @@ class Program
             // Continua buscando até que não seja mais encontrada programação
             while (reunioes.Any())
             {
-
-                // Gera o arquivo Excel com as informações das reuniões
                 ExportarReuniaoParaExcel(month, year, reunioes);
-                // Gera o arquivo Word com as informações das reuniões
                 ExportarReuniaoParaWord(month, year, reunioes);
+                PreencherPartesEstudantes(month, year, reunioes);
 
                 // Avança para o próximo mês
                 month++;
@@ -150,13 +144,13 @@ class Program
         // Chama o WebScraper para buscar as reuniões
         List<Reuniao> reunioes = scraper.GetReunioes(year, month);
 
-        // Gera o arquivo Excel com as informações das reuniões
         ExportarReuniaoParaExcel(month, year, reunioes);
-        // Gera o arquivo Word com as informações das reuniões
         ExportarReuniaoParaWord(month, year, reunioes, true);
-
         PreencherReuniaoWordModelo(month, year, reunioes);
+        PreencherPartesEstudantes(month, year, reunioes);
     }
+
+    
 
     private static void PreencherReuniaoWordModelo(int month, int year, List<Reuniao> reunioes)
     {
@@ -164,6 +158,12 @@ class Program
         string caminhoModelo = $@"S-140_T.docx";
         string caminhoArquivo = $@"ReunioesPreenchidas\\Reunioes_{month}_{year}.docx";
         wordReplacer.PreencherReunioesEmModelo(caminhoModelo, caminhoArquivo, reunioes);
+    }
+
+    private static void PreencherPartesEstudantes(int month, int year, List<Reuniao> reunioes)
+    {
+        PdfEditor pdfEditor = new PdfEditor();
+        pdfEditor.EditPdfForm("S-89-T.pdf", $@"PartesEstudantes\PartesEstudantes_{month}_{year}.pdf", reunioes);
     }
 
     private static int ReceberAno()

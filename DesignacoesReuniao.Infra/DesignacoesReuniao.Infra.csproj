@@ -13,7 +13,6 @@
     <PackageReference Include="EPPlus" Version="7.4.1" />
     <PackageReference Include="itext" Version="8.0.5" />
     <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.5" />
-    <PackageReference Include="itext7.bouncy-castle-fips-adapter" Version="8.0.5" />
     <PackageReference Include="Selenium.WebDriver" Version="4.25.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="130.0.6723.5800" />
     <PackageReference Include="Xceed.Words.NET" Version="3.0.24152.1219" />

@@ -1,4 +1,5 @@
 ﻿using DesignacoesReuniao.Domain.Models;
+using DesignacoesReuniao.Infra.Extensions;
 using DesignacoesReuniao.Infra.Word;
 using iText.Forms;
 using iText.Kernel.Pdf;
@@ -31,36 +32,76 @@ namespace DesignacoesReuniao.Infra.Pdf
                 var fields = form.GetAllFormFields();
                 int qtdeInputs = 4;
                 int qtdeCheckbox = 3;
-                int indiceField = 0;
+                int indiceField = 1;
+                int indicePagina = 0;
 
                 List<Substituicao> substituicoes = new List<Substituicao>();
-                for (int i = 0; i < reunioes.Count; i++)
+                foreach (var reuniao in reunioes)
                 {
                     string nomeField = "";
-                    var partes = reunioes[i].Sessoes
-                        .SelectMany(s => s.Partes.Where(p => partesEstudantes.Contains(p.TituloParte)))
+                    DateOnly dataReuniao = reuniao.InicioSemana;
+                    while (dataReuniao.DayOfWeek != DayOfWeek.Tuesday)
+                    {
+                        dataReuniao = dataReuniao.AddDays(1);
+                    }
+
+                    var partes = reuniao.Sessoes
+                        .SelectMany(s => s.Partes.Where(p => p.TituloParte.Contains(partesEstudantes[0])
+                        || p.TituloParte.Contains(partesEstudantes[1])
+                        || p.TituloParte.Contains(partesEstudantes[2])
+                        || p.TituloParte.Contains(partesEstudantes[3])
+                        || p.TituloParte.Contains(partesEstudantes[4])
+                        || p.TituloParte.Contains(partesEstudantes[5])))
                         .ToList();
-
-                    //Estudante
-                    nomeField = GetNomeField(i,TipoInput.Text, indiceField);
-                    substituicoes.Add(nomeField, partes)
-                    //Ajudante
-
-                    //Data
-
-                    //Título parte
+                    foreach (var parte in partes) 
+                    {
+                        if (indiceField == 29)
+                        {
+                            indiceField = 1;
+                            indicePagina++;
+                        }
+                        //Estudante
+                        nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField, parte.Designados.Any() ? parte.Designados[0].FormatarTextoComPrimeiraLetraMaiuscula() :""));
+                        indiceField++;
+                        //Ajudante
+                        string ajudante = parte.Designados.Count > 1 ? parte.Designados[1].FormatarTextoComPrimeiraLetraMaiuscula() : "";
+                        nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField, ajudante));
+                        indiceField++;
+                        //Data                        
+                        nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField, dataReuniao.ToString()));
+                        indiceField++;
+                        //Título parte
+                        nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField,$"{parte.IndiceParte}. {parte.TituloParte}"));
+                        indiceField++;
+                        //Salao Principal
+                        nomeField = GetNomeField(indicePagina, TipoInput.Checkbox, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField, "Yes"));
+                        indiceField++;
+                        nomeField = GetNomeField(indicePagina, TipoInput.Checkbox, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField, ""));
+                        indiceField++;
+                        nomeField = GetNomeField(indicePagina, TipoInput.Checkbox, indiceField);
+                        substituicoes.Add(new Substituicao(nomeField, ""));
+                        indiceField++;
+                        
+                    }
                 }
 
-
-                fields["nomeCampo1"].SetValue("Novo Valor 1");
-                fields["nomeCampo2"].SetValue("Novo Valor 2");
+                foreach(var substituicao in substituicoes)
+                {
+                    fields[substituicao.ValorOriginal].SetValue(substituicao.ValorSubstituicao);
+                }
 
             }
         }
 
         private string GetNomeField(int indiceReuniao, TipoInput tipoInput, int indiceField)
         {
-            string nomeField = indiceReuniao > 0 ? indiceReuniao.ToString() : "";
+            string nomeField = indiceReuniao > 0 ? indiceReuniao.ToString()+"." : "";
             nomeField += $"900_{indiceField}_";
             nomeField += tipoInput == TipoInput.Text ? "Text_SanSerif" : "CheckBox";
             return nomeField;
