@@ -21,8 +21,9 @@ class Program
         // Exibe as opções para o usuário
         Console.WriteLine("O que deseja fazer?");
         Console.WriteLine("1. Exportar programação da reunião de um mês específico em excel para preenchimento das designações");
-        Console.WriteLine("2. Exportar todas as programações de reuniões disponívels a partir do mês atual em excel para preenchimento das designações");
-        Console.WriteLine("3. Com base em arquivo excel, preencher designados das reuniões de um mês específico");
+        Console.WriteLine("2. Com base em arquivo excel, preencher designados das reuniões de um mês específico");
+        Console.WriteLine("3. Exportar todas as programações de reuniões disponívels a partir do mês atual em excel para preenchimento das designações");
+        
 
         // Lê a escolha do usuário
         Console.Write("Digite o número da opção: ");
@@ -35,12 +36,14 @@ class Program
         }
         else if (option == 2)
         {
-            // Opção 2: Exportar todas as programações de reuniões disponívels a partir do mês atual em excel para preenchimento das designações
-            BuscarAutomaticamente(scraper);
-        }else if(option == 3)
-        {
             // Opção 3: Com base em arquivo excel, preencher designados das reuniões de um mês específico
             PreencherDesignacoes(scraper);
+            
+        }
+        else if(option == 3)
+        {
+            // Opção 2: Exportar todas as programações de reuniões disponívels a partir do mês atual em excel para preenchimento das designações
+            BuscarAutomaticamente(scraper);
         }
 
 
