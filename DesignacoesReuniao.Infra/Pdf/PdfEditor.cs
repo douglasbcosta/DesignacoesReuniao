@@ -1,5 +1,6 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Extensions;
+using DesignacoesReuniao.Infra.Interfaces;
 using DesignacoesReuniao.Infra.Word;
 using iText.Forms;
 using iText.Kernel.Pdf;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace DesignacoesReuniao.Infra.Pdf
 {
-    public class PdfEditor
+    public class PdfEditor : IPdfEditor
     {
         private static readonly string[] PartesEstudantes =
         {
@@ -19,19 +20,24 @@ namespace DesignacoesReuniao.Infra.Pdf
             "Discurso"
         };
 
-        public void EditPdfForm(string inputPdfPath, string outputPdfPath, List<Reuniao> reunioes)
+        string modelo = "S-89-T.pdf";
+
+        public string EditPdfForm(int month, int year, List<Reuniao> reunioes)
         {
-            var fileInfo = new FileInfo(outputPdfPath);
+            string caminhoDestinho = $"PartesEstudantes/{year}/{month}/PartesEstudantes.pdf";
+
+            var fileInfo = new FileInfo(caminhoDestinho);
 
             // Verifica se o diretório existe, se não, cria o diretório
             if (!fileInfo.Directory.Exists)
             {
                 fileInfo.Directory.Create();
             }
+            caminhoDestinho = fileInfo.FullName;
 
             // Abre o PDF existente
-            using (var reader = new PdfReader(inputPdfPath))
-            using (var writer = new PdfWriter(outputPdfPath))
+            using (var reader = new PdfReader(modelo))
+            using (var writer = new PdfWriter(caminhoDestinho))
             using (var pdfDoc = new PdfDocument(reader, writer))
             {
                 // Obtém o formulário do PDF
@@ -71,6 +77,7 @@ namespace DesignacoesReuniao.Infra.Pdf
                     fields[substituicao.ValorOriginal].SetValue(substituicao.ValorSubstituicao);
                 }
             }
+            return caminhoDestinho;
         }
 
         private static DateOnly GetProximaTerca(DateOnly data)

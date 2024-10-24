@@ -1,9 +1,10 @@
 ﻿using DesignacoesReuniao.Domain.Models;
+using DesignacoesReuniao.Infra.Interfaces;
 using OfficeOpenXml;
 
 namespace DesignacoesReuniao.Infra.Excel
 {
-    public class ExcelImporter
+    public class ExcelImporter : IExcelImporter
     {
         public List<Reuniao> ImportarReunioesDeExcel(string caminhoArquivo)
         {

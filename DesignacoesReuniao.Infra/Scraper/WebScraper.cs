@@ -1,12 +1,12 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Extensions;
+using DesignacoesReuniao.Infra.Interfaces;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace DesignacoesReuniao.Infra.Scraper;
-public class WebScraper
+public class WebScraper : IWebScraper
 {
     private readonly string _baseUrl;
 
@@ -17,6 +17,10 @@ public class WebScraper
     public List<Reuniao> GetReunioes(int year, int month)
     {
         var options = new ChromeOptions();
+        options.AddArgument("--headless");
+        options.AddArgument("--disable-gpu");
+        options.AddArgument("--no-sandbox");
+        options.AddArgument("--disable-dev-shm-usage");
         List<Reuniao> reunioes = new List<Reuniao>();
 
         using (IWebDriver driver = new ChromeDriver(options))
@@ -50,8 +54,8 @@ public class WebScraper
         string url = $"{_baseUrl}/{year}/{week}";
         driver.Navigate().GoToUrl(url);
         driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-        var bannerErro = driver.FindElements(By.CssSelector(".bannerError"));
-        bool programacaoDisponivel = bannerErro.Count() == 0;
+        var bannerErro = driver.FindElements(By.CssSelector("h2 > a"));
+        bool programacaoDisponivel = bannerErro.Count() > 0;
         return programacaoDisponivel;
     }
 

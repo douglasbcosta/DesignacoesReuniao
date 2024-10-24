@@ -1,11 +1,12 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Extensions;
+using DesignacoesReuniao.Infra.Interfaces;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace DesignacoesReuniao.Infra.Word
 {
-    public class WordExporter
+    public class WordExporter 
     {
         // Definindo as cores de fundo como variáveis globais (constantes)
         private const string COR_TESOUROS_DA_PALAVRA_DE_DEUS = "2a6b77";

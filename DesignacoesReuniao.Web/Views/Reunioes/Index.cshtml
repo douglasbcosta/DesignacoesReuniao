@@ -1,0 +1,235 @@
+﻿@{
+    ViewData["Title"] = "Reuniões";
+}
+
+<h2 class="text-center my-4">Gerenciamento de Programações de Reuniões</h2>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <!-- Exportar Programação de Mês Específico -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Exportar Programação de Mês Específico</h4>
+                </div>
+                <div class="card-body">
+                    <p>Selecione o mês e o ano para exportar a programação das reuniões em formato Excel.</p>
+                    <form id="exportarMesForm" method="post">
+                        <div class="form-group mb-3">
+                            <label for="month">Mês:</label>
+                            <input type="number" class="form-control" id="month" name="month" min="1" max="12" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="year">Ano:</label>
+                            <input type="number" class="form-control" id="year" name="year" min="2022" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <span class="spinner-border spinner-border-sm" id="loadingMes" style="display: none;" role="status" aria-hidden="true"></span>
+                            Exportar Programação
+                        </button>
+                    </form>
+                    <!-- Botões de download desabilitados inicialmente -->
+                    <div id="downloadButtonsMes" class="mt-3" style="display: none;">
+                        <button id="downloadExcelMes" class="btn btn-outline-primary w-100 mb-2" disabled>Download Excel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preencher Designações com Arquivo Excel -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Preencher Designações com Arquivo Excel para gerar programação em Word e as partes dos estudantes em PDF</h4>
+                </div>
+                <div class="card-body">
+                    <p>Envie um arquivo Excel com as designações preenchidas para atualizar as reuniões de um mês específico.</p>
+                    <form id="preencherDesignacoesForm" method="post" enctype="multipart/form-data">
+                        <div class="form-group mb-3">
+                            <label for="monthDesignacoes">Mês:</label>
+                            <input type="number" class="form-control" id="monthDesignacoes" name="month" min="1" max="12" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="yearDesignacoes">Ano:</label>
+                            <input type="number" class="form-control" id="yearDesignacoes" name="year" min="2022" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="excelFile">Arquivo Excel:</label>
+                            <input type="file" class="form-control" id="excelFile" name="excelFile" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <span class="spinner-border spinner-border-sm" id="loadingDesignacoes" style="display: none;" role="status" aria-hidden="true"></span>
+                            Preencher Designações
+                        </button>
+                    </form>
+                    <!-- Botões de download desabilitados inicialmente -->
+                    <div id="downloadButtonsDesignacoes" class="mt-3" style="display: none;">
+                        <button id="downloadWordDesignacoes" class="btn btn-outline-secondary w-100 mb-2" disabled>Download Word</button>
+                        <button id="downloadPdfDesignacoes" class="btn btn-outline-danger w-100" disabled>Download PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exportar Programações Automáticas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Exportar Programações Disponíveis</h4>
+                </div>
+                <div class="card-body">
+                    <p>Exporta automaticamente todas as programações de reuniões disponíveis a partir do mês atual.</p>
+                    <form id="exportarAutomaticamenteForm" method="post">
+                        <button type="submit" class="btn btn-warning w-100">
+                            <span class="spinner-border spinner-border-sm" id="loadingAutomatico" style="display: none;" role="status" aria-hidden="true"></span>
+                            Exportar Programações Automáticas
+                        </button>
+                    </form>
+                    <!-- Botões de download desabilitados inicialmente -->
+                    <div id="downloadButtonsAutomatico" class="mt-3" style="display: none;">
+                        <!-- Botões de download serão gerados dinamicamente aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função para mostrar o loading no botão
+    function showButtonLoading(buttonId) {
+        document.getElementById(buttonId).style.display = 'inline-block';
+    }
+
+    // Função para esconder o loading no botão
+    function hideButtonLoading(buttonId) {
+        document.getElementById(buttonId).style.display = 'none';
+    }
+
+    // Função para Exportar Programação de Mês Específico
+    document.getElementById('exportarMesForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        showButtonLoading('loadingMes'); // Mostra o loading no botão
+
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+
+        fetch(`/Reunioes/ExportarMesEspecifico?month=${month}&year=${year}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                hideButtonLoading('loadingMes'); // Esconde o loading no botão
+                document.getElementById('downloadButtonsMes').style.display = 'block';
+                document.getElementById('downloadExcelMes').disabled = false;
+
+                document.getElementById('downloadExcelMes').addEventListener('click', function () {
+                    window.location.href = `/Reunioes/DownloadFile?filePath=${data.excelPath}&contentType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`;
+                });
+            })
+            .catch(error => {
+                hideButtonLoading('loadingMes'); // Esconde o loading no botão em caso de erro
+                console.error('Erro ao exportar a programação:', error);
+            });
+    });
+
+    // Função para Preencher Designações
+    document.getElementById('preencherDesignacoesForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        showButtonLoading('loadingDesignacoes'); // Mostra o loading no botão
+
+        const month = document.getElementById('monthDesignacoes').value;
+        const year = document.getElementById('yearDesignacoes').value;
+        const excelFile = document.getElementById('excelFile').files[0];
+
+        if (!month || !year || !excelFile) {
+            console.error('Mês, ano ou arquivo Excel não foram fornecidos corretamente.');
+            hideButtonLoading('loadingDesignacoes'); // Esconde o loading no botão se houver erro de validação
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('month', month);
+        formData.append('year', year);
+        formData.append('excelFile', excelFile);
+
+        fetch('/Reunioes/PreencherDesignacoes', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                hideButtonLoading('loadingDesignacoes'); // Esconde o loading no botão
+                document.getElementById('downloadButtonsDesignacoes').style.display = 'block';
+                document.getElementById('downloadWordDesignacoes').disabled = false;
+                document.getElementById('downloadPdfDesignacoes').disabled = false;
+
+                document.getElementById('downloadWordDesignacoes').addEventListener('click', function () {
+                    window.location.href = `/Reunioes/DownloadFile?filePath=${data.wordPath}&contentType=application/vnd.openxmlformats-officedocument.wordprocessingml.document`;
+                });
+                document.getElementById('downloadPdfDesignacoes').addEventListener('click', function () {
+                    window.location.href = `/Reunioes/DownloadFile?filePath=${data.pdfPath}&contentType=application/pdf`;
+                });
+            })
+            .catch(error => {
+                hideButtonLoading('loadingDesignacoes'); // Esconde o loading no botão em caso de erro
+                console.error('Erro ao preencher designações:', error);
+            });
+    });
+
+    // Função para Exportar Programações Automáticas
+    document.getElementById('exportarAutomaticamenteForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        showButtonLoading('loadingAutomatico'); // Mostra o loading no botão
+
+        fetch('/Reunioes/ExportarAutomaticamente', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                hideButtonLoading('loadingAutomatico'); // Esconde o loading no botão
+                const downloadButtonsContainer = document.getElementById('downloadButtonsAutomatico');
+                downloadButtonsContainer.innerHTML = ''; // Limpa os botões anteriores, se houver
+
+                downloadButtonsContainer.style.display = 'block';
+
+                let currentDate = new Date();
+                let currentMonth = currentDate.getMonth(); // Mês atual (0-11)
+                let currentYear = currentDate.getFullYear();
+
+                data.excelPaths.forEach((excelPath, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-outline-primary w-100 mb-2';
+
+                    let monthIndex = (currentMonth + index) % 12;
+                    let year = currentYear + Math.floor((currentMonth + index) / 12);
+
+                    button.textContent = `Download Excel - ${getMonthName(monthIndex)} ${year}`;
+
+                    button.addEventListener('click', function () {
+                        window.location.href = `/Reunioes/DownloadFile?filePath=${excelPath}&contentType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`;
+                    });
+
+                    downloadButtonsContainer.appendChild(button);
+                });
+            })
+            .catch(error => {
+                hideButtonLoading('loadingAutomatico'); // Esconde o loading no botão em caso de erro
+                console.error('Erro ao exportar programações automáticas:', error);
+            });
+    });
+
+    // Função para obter o nome do mês
+    function getMonthName(monthIndex) {
+        const monthNames = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+        return monthNames[monthIndex];
+    }
+</script>
