@@ -18,9 +18,10 @@ public class WebScraper : IWebScraper
     {
         var options = new ChromeOptions();
         options.AddArgument("--headless");
-        options.AddArgument("--disable-gpu");
-        options.AddArgument("--no-sandbox");
-        options.AddArgument("--disable-dev-shm-usage");
+        // Simular um navegador real
+        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+        options.AddArgument("--disable-blink-features=AutomationControlled");
+
         List<Reuniao> reunioes = new List<Reuniao>();
 
         using (IWebDriver driver = new ChromeDriver(options))
@@ -35,7 +36,13 @@ public class WebScraper : IWebScraper
             {
                 string url = $"{_baseUrl}/{year}/{week}";
                 driver.Navigate().GoToUrl(url);
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+                bool pageIsReady = false;
+                while (!pageIsReady)
+                {
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    pageIsReady = (bool)js.ExecuteScript("return document.readyState == 'complete'");
+                }
                 Reuniao reuniao = ProcessarReuniao(driver, month, year, week);
                 if (reuniao != null)
                 {
@@ -53,9 +60,16 @@ public class WebScraper : IWebScraper
     {
         string url = $"{_baseUrl}/{year}/{week}";
         driver.Navigate().GoToUrl(url);
-        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-        var bannerErro = driver.FindElements(By.CssSelector("h2 > a"));
-        bool programacaoDisponivel = bannerErro.Count() > 0;
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+        bool pageIsReady = false;
+        while (!pageIsReady)
+        {
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+            pageIsReady = (bool)js.ExecuteScript("return document.readyState == 'complete'");
+        }
+        var bannerErro = driver.FindElements(By.CssSelector(".bannerErro"));
+        bool programacaoDisponivel = bannerErro.Count() == 0;
         return programacaoDisponivel;
     }
 
