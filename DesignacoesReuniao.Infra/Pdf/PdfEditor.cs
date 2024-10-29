@@ -24,6 +24,8 @@ namespace DesignacoesReuniao.Infra.Pdf
 
         public string EditPdfForm(int month, int year, List<Reuniao> reunioes)
         {
+            Environment.SetEnvironmentVariable("ITEXT_BOUNCY_CASTLE_FACTORY_NAME", "bouncy-castle");
+
             string caminhoDestinho = $"PartesEstudantes/{year}/{month}/PartesEstudantes.pdf";
 
             var fileInfo = new FileInfo(caminhoDestinho);
