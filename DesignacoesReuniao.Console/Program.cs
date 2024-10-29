@@ -41,7 +41,7 @@ namespace DesignacoesReuniao
 
         public void Run()
         {
-            Environment.SetEnvironmentVariable("ITEXT_BOUNCY_CASTLE_FACTORY_NAME", "bouncy-castle");
+            
 
             // Exibe as opções para o usuário
             Console.WriteLine("O que deseja fazer?");
