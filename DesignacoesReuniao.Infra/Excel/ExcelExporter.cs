@@ -1,11 +1,13 @@
 ﻿using DesignacoesReuniao.Domain.Models;
+using DesignacoesReuniao.Infra.Interfaces;
+using DocumentFormat.OpenXml.Bibliography;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Drawing;
 
 namespace DesignacoesReuniao.Infra.Excel
 {
-    public class ExcelExporter
+    public class ExcelExporter : IExcelExporter
     {
         // Definindo as cores de fundo como variáveis globais (constantes)
         private const string COR_TESOUROS_DA_PALAVRA_DE_DEUS = "#2a6b77";
@@ -18,8 +20,15 @@ namespace DesignacoesReuniao.Infra.Excel
         private const string SESSAO_FACA_SEU_MELHOR_NO_MINISTERIO = "FAÇA SEU MELHOR NO MINISTÉRIO";
         private const string SESSAO_NOSSA_VIDA_CRISTA = "NOSSA VIDA CRISTÃ";
 
-        public void ExportarReunioesParaExcel(List<Reuniao> reunioes, string caminhoArquivo)
+        public string ExportarReunioesParaExcel(int month, int year, List<Reuniao> reunioes)
         {
+            
+            string caminhoArquivo = BuscarArquivo(month, year);
+            if (!string.IsNullOrEmpty(caminhoArquivo))
+            {
+                return caminhoArquivo;
+            }
+            caminhoArquivo = GetCaminhoArquivo(month, year);
             // Configura a licença do EPPlus (obrigatório a partir da versão 5)
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -58,6 +67,29 @@ namespace DesignacoesReuniao.Infra.Excel
                 // Salva o arquivo Excel no caminho especificado
                 SalvarArquivoExcel(package, caminhoArquivo);
             }
+            return caminhoArquivo;
+        }
+
+        public string BuscarArquivo(int month, int year)
+        {
+            string caminhoArquivo = GetCaminhoArquivo(month, year);
+            FileInfo fileInfo = new FileInfo(caminhoArquivo);
+
+            // Verifica se o diretório existe, se não, cria o diretório
+            if (!fileInfo.Directory.Exists)
+            {
+                fileInfo.Directory.Create();
+            }
+            if (!fileInfo.Exists)
+            {
+                return "";
+            }
+            return fileInfo.FullName;
+        }
+
+        private static string GetCaminhoArquivo(int month, int year)
+        {
+            return $"{year}/{month}/ProgramacaoReuniao/Reunioes_{year}_{month}.xlsx";
         }
 
         private void ConfigurarCabecalho(ExcelWorksheet worksheet)

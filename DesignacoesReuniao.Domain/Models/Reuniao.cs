@@ -3,6 +3,7 @@
     public class Reuniao
     {
         public string Semana { get; set; }
+        public DateOnly InicioSemana { get; set; }
         public string LeituraDaSemana { get; set; }
         public string Presidente { get; set; } 
         public string OracaoInicial { get; set; } 

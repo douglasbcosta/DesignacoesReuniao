@@ -1,21 +1,22 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Constantes;
 using DesignacoesReuniao.Infra.Extensions;
-using DocumentFormat.OpenXml;
+using DesignacoesReuniao.Infra.Interfaces;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DesignacoesReuniao.Infra.Word
 {
-    public class WordReplacer
+    public class WordReplacer : IWordReplacer
     {
-        
+        string caminhoModelo = "S-140_T.docx";
 
-        public void PreencherReunioesEmModelo(string caminhoModelo, string caminhoReuniaoPreenchida, List<Reuniao> reunioes)
+        public string PreencherReunioesEmModelo(int month, int year, List<Reuniao> reunioes)
         {
-            CopiarModelo(caminhoModelo, caminhoReuniaoPreenchida);
+            string caminhoReuniaoPreenchida = $"ReunioesPreenchidas/{year}/{month}/ReunioesPreenchidas_{year}_{month}.docx";
+
+            caminhoReuniaoPreenchida = CopiarModelo(caminhoModelo, caminhoReuniaoPreenchida);
 
             // Abre o documento Word
             using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(caminhoReuniaoPreenchida, true))
@@ -29,8 +30,9 @@ namespace DesignacoesReuniao.Infra.Word
             }
 
             Console.WriteLine($"Arquivo Word gerado com sucesso em: {caminhoReuniaoPreenchida}");
+            return caminhoReuniaoPreenchida;
         }
-        private static void CopiarModelo(string caminhoModelo, string caminhoReuniaoPreenchida)
+        private static string CopiarModelo(string caminhoModelo, string caminhoReuniaoPreenchida)
         {
             FileInfo fileInfo = new FileInfo(caminhoReuniaoPreenchida);
 
@@ -39,6 +41,7 @@ namespace DesignacoesReuniao.Infra.Word
                 fileInfo.Directory.Create();
             }
             File.Copy(caminhoModelo, caminhoReuniaoPreenchida, true);
+            return fileInfo.FullName;
         }
         private void ReplaceGerais(Body? body)
         {
@@ -728,5 +731,7 @@ namespace DesignacoesReuniao.Infra.Word
                 }
             }
         }
+
+        
     }
 }

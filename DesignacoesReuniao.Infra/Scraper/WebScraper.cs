@@ -1,12 +1,12 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Extensions;
+using DesignacoesReuniao.Infra.Interfaces;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace DesignacoesReuniao.Infra.Scraper;
-public class WebScraper
+public class WebScraper : IWebScraper
 {
     private readonly string _baseUrl;
 
@@ -17,6 +17,11 @@ public class WebScraper
     public List<Reuniao> GetReunioes(int year, int month)
     {
         var options = new ChromeOptions();
+        options.AddArgument("--headless");
+        // Simular um navegador real
+        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+        options.AddArgument("--disable-blink-features=AutomationControlled");
+
         List<Reuniao> reunioes = new List<Reuniao>();
 
         using (IWebDriver driver = new ChromeDriver(options))
@@ -31,8 +36,14 @@ public class WebScraper
             {
                 string url = $"{_baseUrl}/{year}/{week}";
                 driver.Navigate().GoToUrl(url);
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-                Reuniao reuniao = ProcessarReuniao(driver, month, year);
+                bool pageIsReady = false;
+                while (!pageIsReady)
+                {
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    pageIsReady = (bool)js.ExecuteScript("return document.readyState == 'complete'");
+                }
+                Reuniao reuniao = ProcessarReuniao(driver, month, year, week);
                 if (reuniao != null)
                 {
                     reunioes.Add(reuniao);
@@ -49,8 +60,15 @@ public class WebScraper
     {
         string url = $"{_baseUrl}/{year}/{week}";
         driver.Navigate().GoToUrl(url);
-        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-        var bannerErro = driver.FindElements(By.CssSelector(".bannerError"));
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+        bool pageIsReady = false;
+        while (!pageIsReady)
+        {
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+            pageIsReady = (bool)js.ExecuteScript("return document.readyState == 'complete'");
+        }
+        var bannerErro = driver.FindElements(By.CssSelector(".bannerErro"));
         bool programacaoDisponivel = bannerErro.Count() == 0;
         return programacaoDisponivel;
     }
@@ -73,21 +91,35 @@ public class WebScraper
         return (firstWeek, lastWeek);
     }
 
-    private Reuniao ProcessarReuniao(IWebDriver driver, int month, int year)
+    private Reuniao ProcessarReuniao(IWebDriver driver, int month, int year, int week)
     {
+        DateOnly dataSemana = ObterDataDaSemana(year, week);
         string tituloSemana = ObterTituloSemana(driver);
         string leituraSemana = ObterLeituraDaSemana(driver);
         if (string.IsNullOrEmpty(tituloSemana)) return null;
 
         Reuniao reuniao = new Reuniao { 
             Semana = tituloSemana, 
-            LeituraDaSemana = leituraSemana 
+            InicioSemana = dataSemana,
+            LeituraDaSemana = leituraSemana
         };
 
         AdicionarCanticos(driver, reuniao);
         AdicionarSessoes(driver, reuniao, month, year);
 
         return reuniao;
+    }
+
+    public static DateOnly ObterDataDaSemana(int ano, int semanaDoAno)
+    {
+        DateTime primeiroDiaDoAno = new DateTime(ano, 1, 1);
+        var cultura = CultureInfo.CurrentCulture;
+        int semanaPrimeiroDia = cultura.Calendar.GetWeekOfYear(primeiroDiaDoAno, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
+
+        int diasAteSemana = (semanaDoAno - semanaPrimeiroDia) * 7;
+        DateTime dataDaSemana = primeiroDiaDoAno.AddDays(diasAteSemana);
+
+        return DateOnly.FromDateTime(dataDaSemana);
     }
 
     private string ObterTituloSemana(IWebDriver driver)

@@ -18,11 +18,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DesignacoesReuniao.CrossCutting\DesignacoesReuniao.CrossCutting.csproj" />
     <ProjectReference Include="..\DesignacoesReuniao.Infra\DesignacoesReuniao.Infra.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="S-140_T.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="S-89-T.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
