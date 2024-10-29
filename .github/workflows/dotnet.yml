@@ -8,8 +8,8 @@ on:
 
 env:
   PROJECT_LOCATION: dotnet-mvc/dotnet-mvc.csproj
-  ELASTIC_BEANSTALK_NAME: DesignacoesReuniao
-  ELASTIC_BEANSTALK_ENV_NAME: DesignacoesReuniao-env
+  ELASTIC_BEANSTALK_NAME: DesignacaoReuniao
+  ELASTIC_BEANSTALK_ENV_NAME: DesignacaoReuniao-env
 
 jobs:
   build:
