@@ -7,8 +7,6 @@ phases:
     commands:
       - dotnet publish DesignacoesReuniao.Web/DesignacoesReuniao.Web.csproj -c Release -o ./publish
       - ls ./publish
-      - mv ./publish/* .  # Move os arquivos para a raiz
-      - ls
 artifacts:
   files:
-    - '**/*'
+    - publish/**
