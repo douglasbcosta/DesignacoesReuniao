@@ -6,6 +6,8 @@ phases:
   build:
     commands:
       - dotnet publish DesignacoesReuniao.Web/DesignacoesReuniao.Web.csproj -c Release -o ./publish
+      - ls ./publish
+      - cp -r ./publish/* .
 artifacts:
   files:
-    - ./publish/**
+    - '**/*'
