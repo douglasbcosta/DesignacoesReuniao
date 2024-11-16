@@ -5,7 +5,7 @@ phases:
       dotnet: 8.0
   build:
     commands:
-      - dotnet publish -c Release -o ./publish
+      - dotnet publish "DesignacoesReuniao.Web.csproj" -c Release -o /app/publish
 artifacts:
   files:
     - ./publish/**
