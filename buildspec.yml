@@ -7,8 +7,7 @@ phases:
     commands:
       - dotnet publish DesignacoesReuniao.Web/DesignacoesReuniao.Web.csproj -c Release -o ./publish
       - ls ./publish
-      - rm -rf ./DesignacoesReuniao.Web # Remove o diretório conflitante
-      - cp -r ./publish/* .
+      - mv ./publish/* .  # Move os arquivos para a raiz
 artifacts:
   files:
     - '**/*'
