@@ -9,4 +9,5 @@ phases:
       - ls ./publish
 artifacts:
   files:
-    - publish/**
+    - publish/**  # Inclui todos os arquivos e subdiretórios
+  base-directory: publish  # Define 'publish' como o diretório base
