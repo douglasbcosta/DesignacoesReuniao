@@ -229,7 +229,15 @@ namespace DesignacoesReuniao.Infra.Word
                 foreach (var linha in tabela.Descendants<TableRow>())
                 {
                     var celulas = linha.Descendants<TableCell>().ToList();
-
+                    foreach(var celula in celulas)
+                    {
+                        if (celula.InnerText.Contains(Reuniao.GetSessoesReunioes()[1]))
+                        {
+                            int width = ObterLarguraCelula(celula);
+                            width = width - 500;
+                            AjustarLarguraCelula(celula, width);
+                        }
+                    }
                     // Verifica se a linha tem exatamente 5 colunas
                     if (celulas.Count == 5 || celulas.Count == 4)
                     {
@@ -342,7 +350,6 @@ namespace DesignacoesReuniao.Infra.Word
                         if (text.Text.Contains(textoOriginal))
                         {
                             text.Text = text.Text.Replace(textoOriginal, textoAlterado);
-
                         }
                     }
                 }
@@ -376,12 +383,7 @@ namespace DesignacoesReuniao.Infra.Word
                 {
                     foreach (var text in run.Descendants<Text>())
                     {
-                        if (text.Text == "Cântico número")
-                        {
-                            text.Text = text.Text.Replace("Cântico número", canticoAlteracao);
-                        }
-
-                        if (text.Text == "número")
+                        if (text.Text.Contains("número"))
                         {
                             text.Text = text.Text.Replace("número", canticoAlteracao.Split(' ')[1]);
                         }
@@ -389,6 +391,7 @@ namespace DesignacoesReuniao.Infra.Word
                 }
             }
         }
+
         private static void ReplaceIndices(Body? body)
         {
             int indice = 0;
@@ -405,10 +408,8 @@ namespace DesignacoesReuniao.Infra.Word
                             {
                                 indice = 1;
                             }
-                            if (text.Text != $"{indice}.")
-                            {
-                                text.Text = text.Text.Replace(text.Text, $"{indice}.");
-                            }
+                            string indiceAntigo = text.Text.Split('.')[0];
+                            text.Text = $"{indice.ToString()}. \u200B";
                             indice++;
                         }
                     }
@@ -426,7 +427,7 @@ namespace DesignacoesReuniao.Infra.Word
                     {
                         if (text.Text.Contains(textoOriginal))
                         {
-                            text.Text = text.Text.Replace(text.Text, textoAlterado);
+                            text.Text = text.Text.Replace(text.Text.Trim(), textoAlterado);
                             return;
                         }
                     }
@@ -451,7 +452,7 @@ namespace DesignacoesReuniao.Infra.Word
 
                         if (sessaoAtual.Contains(sessao) && text.Text.Contains(textoOriginal))
                         {
-                            text.Text = text.Text.Replace(text.Text, textoAlterado);
+                            text.Text = text.Text.Replace(text.Text.Trim(), textoAlterado);
                             return;
                         }
                     }
@@ -510,6 +511,7 @@ namespace DesignacoesReuniao.Infra.Word
             {
                 foreach (var parte in sessao.Partes)
                 {
+                    parte.TituloParte = $" {parte.TituloParte.Trim()}";
                     GerarSubstituicoesTesouros(substiticoes, sessao, parte);
                     GerarSubstituicoesMinisterio(substiticoes, sessao, parte);
                     GerarSubstituicoesVidaCrista(substiticoes, sessao, parte);

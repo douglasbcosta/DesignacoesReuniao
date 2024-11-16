@@ -26,7 +26,7 @@ namespace DesignacoesReuniao.Infra.Pdf
         {
             Environment.SetEnvironmentVariable("ITEXT_BOUNCY_CASTLE_FACTORY_NAME", "bouncy-castle");
 
-            string caminhoDestinho = $"PartesEstudantes/{year}/{month}/PartesEstudantes.pdf";
+            string caminhoDestinho = $"PartesEstudantes/{year}/{month}/PartesEstudantes_{year}_{month}.pdf";
 
             var fileInfo = new FileInfo(caminhoDestinho);
 
@@ -69,7 +69,10 @@ namespace DesignacoesReuniao.Infra.Pdf
                         }
 
                         // Adiciona substituições para Estudante, Ajudante, Data, Título e Salão Principal
-                        AdicionarSubstituicoes(substituicoes, parte, dataReuniao, indicePagina, ref indiceField);
+                        if (parte.Designados.Count > 0 && !string.IsNullOrEmpty(parte.Designados[0]))
+                        {
+                            AdicionarSubstituicoes(substituicoes, parte, dataReuniao, indicePagina, ref indiceField);
+                        }
                     }
                 }
 
@@ -94,6 +97,7 @@ namespace DesignacoesReuniao.Infra.Pdf
         private void AdicionarSubstituicoes(List<Substituicao> substituicoes, Parte parte, DateOnly dataReuniao, int indicePagina, ref int indiceField)
         {
             // Estudante
+
             var nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
             substituicoes.Add(new Substituicao(nomeField, parte.Designados.Any() ? parte.Designados[0].FormatarTextoComPrimeiraLetraMaiuscula() : ""));
             indiceField++;
