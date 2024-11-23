@@ -1,6 +1,8 @@
 ﻿using DesignacoesReuniao.Infra.Excel;
 using DesignacoesReuniao.Infra.Interfaces;
 using DesignacoesReuniao.Infra.Pdf;
+using DesignacoesReuniao.Infra.Repostories;
+using DesignacoesReuniao.Infra.Repostories.Interface;
 using DesignacoesReuniao.Infra.Scraper;
 using DesignacoesReuniao.Infra.Word;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,7 @@ namespace DesignacoesReuniao.CrossCutting.Injections
             services.AddTransient<IWordReplacer, WordReplacer>();
             services.AddTransient<IPdfEditor, PdfEditor>();
             services.AddTransient<IExcelImporter, ExcelImporter>();
+            services.AddScoped<IPessoaRepository, PessoaRepository>();
 
             return services;
         }

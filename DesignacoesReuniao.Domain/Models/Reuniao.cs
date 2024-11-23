@@ -5,13 +5,16 @@
         public string Semana { get; set; }
         public DateOnly InicioSemana { get; set; }
         public string LeituraDaSemana { get; set; }
-        public string Presidente { get; set; } 
-        public string OracaoInicial { get; set; } 
-        public string OracaoFinal { get; set; } 
+        public Pessoa Presidente { get; set; } 
+        public Pessoa OracaoInicial { get; set; } 
+        public Pessoa OracaoFinal { get; set; } 
         public List<string> Canticos { get; set; } = new List<string>();
         public List<Sessao> Sessoes { get; set; }
         public Reuniao() { 
             Sessoes = new List<Sessao>(); 
+            Presidente = new Pessoa();
+            OracaoInicial = new Pessoa();
+            OracaoFinal = new Pessoa();
         }
         public void AdicionarSessao(Sessao sessao) { 
             Sessoes.Add(sessao); 

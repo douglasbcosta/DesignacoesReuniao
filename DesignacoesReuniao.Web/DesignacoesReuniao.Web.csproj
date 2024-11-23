@@ -19,9 +19,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="PartesEstudantes\2024\12\" />
-    <Folder Include="ReunioesPreenchidas\2024\12\" />
-  </ItemGroup>
-
 </Project>

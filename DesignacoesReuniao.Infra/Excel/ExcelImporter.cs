@@ -1,11 +1,19 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Interfaces;
+using DesignacoesReuniao.Infra.Repostories.Interface;
 using OfficeOpenXml;
 
 namespace DesignacoesReuniao.Infra.Excel
 {
     public class ExcelImporter : IExcelImporter
     {
+        private readonly IPessoaRepository _pessoasRepository;
+
+        public ExcelImporter(IPessoaRepository pessoasRepository)
+        {
+            _pessoasRepository = pessoasRepository;
+        }
+
         public List<Reuniao> ImportarReunioesDeExcel(string caminhoArquivo)
         {
             // Configura a licença do EPPlus (obrigatório a partir da versão 5)
@@ -27,7 +35,8 @@ namespace DesignacoesReuniao.Infra.Excel
                     string[] textoParte = worksheet.Cells[linhaAtual, 3].Text.Split('.');
                     int indiceParte = textoParte.Count() > 1 ? int.Parse(textoParte[0]) : 0; 
                     string parte = textoParte.Count() > 1 ? textoParte[1] : textoParte[0];
-                    string designados = worksheet.Cells[linhaAtual, 5].Text;
+                    string designado = worksheet.Cells[linhaAtual, 5].Text;
+                    string ajudante = worksheet.Cells[linhaAtual, 6].Text;
                     int tempoMinutos = worksheet.Cells[linhaAtual, 4].GetValue<int>();
 
                     // Verifica se é uma nova reunião (baseado na semana)
@@ -41,10 +50,7 @@ namespace DesignacoesReuniao.Infra.Excel
                         reuniaoAtual = new Reuniao
                         {
                             Semana = semana,
-                            Sessoes = new List<Sessao>(),
-                            Presidente = string.Empty,
-                            OracaoInicial = string.Empty,
-                            OracaoFinal = string.Empty
+                            Sessoes = new List<Sessao>()
                         };
                     }
 
@@ -55,30 +61,52 @@ namespace DesignacoesReuniao.Infra.Excel
                         sessaoAtual = new Sessao(sessao);
                         reuniaoAtual.Sessoes.Add(sessaoAtual);
                     }
-                    Parte parteAtual = new Parte(indiceParte,parte, tempoMinutos);
-                    var designadosAtuais = designados.Split(new[] { "/" }, StringSplitOptions.None);
-                    foreach(var designadoAtual in designadosAtuais)
-                    {
-                        parteAtual.AdicionarDesignado(designadoAtual.Trim());
-                    }
-                    
-
-                    // Adiciona a parte à sessão
-                    sessaoAtual.AdicionarParte(parteAtual);
 
                     // Verifica se é Presidente, Oração Inicial ou Oração Final
                     if (parte == "Presidente")
                     {
-                        reuniaoAtual.Presidente = designados;
+                        var pessoa = _pessoasRepository.BuscarPessoa(designado);
+                        if (pessoa != null)
+                            reuniaoAtual.Presidente = pessoa;
+                        linhaAtual++;
+                        continue;
                     }
                     else if (parte == "Oração Inicial")
                     {
-                        reuniaoAtual.OracaoInicial = designados;
+                        var pessoa = _pessoasRepository.BuscarPessoa(designado);
+                        if (pessoa != null)
+                            reuniaoAtual.OracaoInicial = pessoa;
+                        linhaAtual++;
+                        continue;
+
                     }
                     else if (parte == "Oração Final")
                     {
-                        reuniaoAtual.OracaoFinal = designados;
+                        var pessoa = _pessoasRepository.BuscarPessoa(designado);
+                        if (pessoa != null)
+                            reuniaoAtual.OracaoFinal = pessoa;
+                        linhaAtual++;
+                        continue;
                     }
+
+                    Parte parteAtual = new Parte(indiceParte,parte, tempoMinutos);
+                    if (!string.IsNullOrEmpty(designado))
+                    {
+                        var pessoa = _pessoasRepository.BuscarPessoa(designado);
+                        if(pessoa != null)
+                            parteAtual.AdicionarDesignado(pessoa);
+                    }
+                    if (!string.IsNullOrEmpty(ajudante))
+                    {
+                        var pessoa = _pessoasRepository.BuscarPessoa(ajudante);
+                        if (pessoa != null)
+                            parteAtual.AdicionarDesignado(pessoa);
+                    }
+
+                    // Adiciona a parte à sessão
+                    sessaoAtual.AdicionarParte(parteAtual);
+
+                    
 
                     linhaAtual++;
                 }

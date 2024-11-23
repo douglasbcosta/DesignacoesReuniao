@@ -111,7 +111,14 @@ namespace DesignacoesReuniao
                                 if (parteImportada != null)
                                 {
                                     // Atualiza os designados e o tempo da parte
-                                    parteProgramada.Designados = parteImportada.Designados;
+                                    if(parteImportada.ContemDesignado())
+                                    {
+                                        parteProgramada.AdicionarDesignado(parteImportada.Designado);
+                                    }
+                                    if (parteImportada.ContemAjudante())
+                                    {
+                                        parteProgramada.AdicionarDesignado(parteImportada.Ajudante);
+                                    }
                                     parteProgramada.TempoMinutos = parteImportada.TempoMinutos;
                                 }
                             }

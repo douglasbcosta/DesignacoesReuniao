@@ -6,9 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DesignacoesReuniao.Core\DesignacoesReuniao.Shared.csproj" />
-  </ItemGroup>
-
-
 </Project>

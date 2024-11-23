@@ -1,6 +1,4 @@
-﻿using DesignacoesReuniao.Infra.Extensions;
-
-namespace DesignacoesReuniao.Infra.Word
+﻿namespace DesignacoesReuniao.Infra.Word
 {
     public class Substituicao
     {
@@ -8,7 +6,7 @@ namespace DesignacoesReuniao.Infra.Word
         {
             Sessao = sessao;
             ValorOriginal = valorOriginal ?? "";
-            ValorSubstituicao = valorOriginal.Contains("Nome") ? valorSubstituicao.FormatarTextoComPrimeiraLetraMaiuscula() : valorSubstituicao ?? "";
+            ValorSubstituicao = valorOriginal.Contains("Nome") ? valorSubstituicao : valorSubstituicao ?? "";
             Tema = tema;
         }
         public string Tema { get; set; }

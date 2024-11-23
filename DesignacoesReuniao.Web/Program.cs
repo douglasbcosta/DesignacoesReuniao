@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using DesignacoesReuniao.CrossCutting.Injections;
 
 var builder = WebApplication.CreateBuilder(args);

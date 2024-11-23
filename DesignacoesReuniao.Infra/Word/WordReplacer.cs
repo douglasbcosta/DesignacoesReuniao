@@ -1,7 +1,7 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Constantes;
-using DesignacoesReuniao.Infra.Extensions;
 using DesignacoesReuniao.Infra.Interfaces;
+using DesignacoesReuniao.Shared.Extensions;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text.RegularExpressions;
@@ -133,7 +133,7 @@ namespace DesignacoesReuniao.Infra.Word
                         int minutos = text.Text.ExtrairTempo();
                         if (minutos > 0)
                         {
-                            if(sessaoAtual == Reuniao.GetSessoesReunioes()[1] && minutos <= 5) 
+                            if((sessaoAtual == Reuniao.GetSessoesReunioes()[0] || sessaoAtual == Reuniao.GetSessoesReunioes()[1]) && minutos <= 5) 
                             {
                                 minutos++;
                             }
@@ -499,14 +499,14 @@ namespace DesignacoesReuniao.Infra.Word
             {
                 substiticoes.Add(new Substituicao("Cântico número", cantico));
             }
-            substiticoes.Add(new Substituicao("Nome", reunioes.Presidente));
+            substiticoes.Add(new Substituicao("Nome", reunioes.Presidente?.ToString()));
             substiticoes.Add(new Substituicao("Nome", ""));
-            if (string.IsNullOrEmpty(reunioes.OracaoInicial)) 
+            if (string.IsNullOrEmpty(reunioes.OracaoInicial?.ToString())) 
             {
                 substiticoes.Add(new Substituicao("Oração", ""));
             }
 
-            substiticoes.Add(new Substituicao("Nome", reunioes.OracaoInicial));
+            substiticoes.Add(new Substituicao("Nome", reunioes.OracaoInicial?.ToString()));
             foreach (var sessao in reunioes.Sessoes)
             {
                 foreach (var parte in sessao.Partes)
@@ -539,11 +539,11 @@ namespace DesignacoesReuniao.Infra.Word
                 }
 
             }
-            if (string.IsNullOrEmpty(reunioes.OracaoFinal))
+            if (string.IsNullOrEmpty(reunioes.OracaoFinal?.ToString()))
             {
                 substiticoes.Add(new Substituicao("Oração", ""));
             }
-            substiticoes.Add(new Substituicao("Nome", reunioes.OracaoFinal));
+            substiticoes.Add(new Substituicao("Nome", reunioes.OracaoFinal?.ToString()));
 
             return substiticoes;
 
@@ -556,19 +556,19 @@ namespace DesignacoesReuniao.Infra.Word
                 if (parte.TituloParte.Contains("Joias espirituais"))
                 {
                     substiticoes.Add(new Substituicao("Joias espirituais", parte.TituloParte, sessao.TituloSessao));
-                    substiticoes.Add(new Substituicao("Nome", parte.Designados.FirstOrDefault(), sessao.TituloSessao));
+                    substiticoes.Add(new Substituicao("Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
                 }
                 else if (parte.TituloParte.Contains("Leitura da Bíblia"))
                 {
                     substiticoes.Add(new Substituicao("Leitura da Bíblia", parte.TituloParte, sessao.TituloSessao));
                     substiticoes.Add(new Substituicao("Nome", "", sessao.TituloSessao));
-                    substiticoes.Add(new Substituicao("Nome", parte.Designados.FirstOrDefault(), sessao.TituloSessao));
+                    substiticoes.Add(new Substituicao("Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
 
                 }
                 else
                 {
                     substiticoes.Add(new Substituicao("Tema", parte.TituloParte, sessao.TituloSessao));
-                    substiticoes.Add(new Substituicao("Nome", parte.Designados.FirstOrDefault(), sessao.TituloSessao));
+                    substiticoes.Add(new Substituicao("Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
                 }
             }
         }
@@ -585,11 +585,12 @@ namespace DesignacoesReuniao.Infra.Word
                     substiticoes.Add(new Substituicao("Estudante/ajudante", "", sessao.TituloSessao, parte.TituloParte));
                 }
 
-                if (parte.Designados.Count == 1 || parte.TituloParte.Contains("Discurso"))
+                if (!parte.ContemAjudante() || parte.TituloParte.Contains("Discurso"))
                 {
                     substiticoes.Add(new Substituicao("Estudante/ajudante", "Estudante", sessao.TituloSessao, parte.TituloParte));
                 }
-                substiticoes.Add(new Substituicao("Nome/Nome", string.Join("/ ", parte.Designados), sessao.TituloSessao));
+
+                substiticoes.Add(new Substituicao("Nome/Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
             }
         }
 
@@ -601,13 +602,13 @@ namespace DesignacoesReuniao.Infra.Word
                 {
                     substiticoes.Add(new Substituicao("Estudo bíblico de congregação", parte.TituloParte, sessao.TituloSessao));
                     substiticoes.Add(new Substituicao("(30 min)", $"({parte.TempoMinutos} min)", sessao.TituloSessao));
-                    substiticoes.Add(new Substituicao("Nome/Nome", parte.Designados.FirstOrDefault(), sessao.TituloSessao));
+                    substiticoes.Add(new Substituicao("Nome/Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
                 }
                 else
                 {
                     substiticoes.Add(new Substituicao("Tema", parte.TituloParte, sessao.TituloSessao));
                     substiticoes.Add(new Substituicao("(XX min)", $"({parte.TempoMinutos} min)", sessao.TituloSessao));
-                    substiticoes.Add(new Substituicao("Nome", parte.Designados.FirstOrDefault(), sessao.TituloSessao));
+                    substiticoes.Add(new Substituicao("Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
                 }
             }
         }

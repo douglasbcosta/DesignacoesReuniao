@@ -1,6 +1,4 @@
 ﻿using DesignacoesReuniao.Domain.Models;
-using DesignacoesReuniao.Infra.Extensions;
-using DesignacoesReuniao.Infra.Interfaces;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
@@ -41,8 +39,8 @@ namespace DesignacoesReuniao.Infra.Word
                     contadorReunioes++;
                     Table tabela = CriarTabelaInvisivel();
 
-                    AdicionarLinhaNaTabelaComNegrito(tabela, $"{reuniao.Semana} | {reuniao.LeituraDaSemana}", "Presidente:", reuniao.Presidente);
-                    AdicionarLinhaNaTabela(tabela, reuniao.Canticos[0], "Oração Inicial:", reuniao.OracaoInicial);
+                    AdicionarLinhaNaTabelaComNegrito(tabela, $"{reuniao.Semana} | {reuniao.LeituraDaSemana}", "Presidente:", reuniao.Presidente?.ToString());
+                    AdicionarLinhaNaTabela(tabela, reuniao.Canticos[0], "Oração Inicial:", reuniao.OracaoInicial?.ToString());
                     body.Append(tabela);
 
                     foreach (var sessao in reuniao.Sessoes)
@@ -59,13 +57,13 @@ namespace DesignacoesReuniao.Infra.Word
                         foreach (var parte in sessao.Partes)
                         {
                             string textoSegundaColuna = ObterTextoSegundaColuna(sessao.TituloSessao, parte.TituloParte);
-                            string designados = string.Join("/ ", parte.Designados);
+                            string designados = parte.ObterNomesDesignadoEAjudante();
                             AdicionarLinhaNaTabela(tabela, $"{parte.TituloParte} ({parte.TempoMinutos} min)", textoSegundaColuna, designados);
                         }
                         body.Append(tabela);
                     }
 
-                    AdicionarLinhaNaTabela(tabela, reuniao.Canticos[2], "Oração Final:", reuniao.OracaoFinal);
+                    AdicionarLinhaNaTabela(tabela, reuniao.Canticos[2], "Oração Final:", reuniao.OracaoFinal.ToString());
                     VerificarQuebraDePagina(body, qtdReunioes, contadorReunioes);
                 }
 
@@ -263,7 +261,6 @@ namespace DesignacoesReuniao.Infra.Word
 
         private TableCell AdicionarColuna3(string coluna3)
         {
-            coluna3 = coluna3.FormatarTextoComPrimeiraLetraMaiuscula();
             // Cria a célula para a terceira coluna (intermediária) com espaçamento inicial
             TableCell celulaColuna3 = new TableCell(new Paragraph(new Run(new Text(coluna3))));
 

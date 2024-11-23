@@ -1,6 +1,6 @@
 ﻿using DesignacoesReuniao.Domain.Models;
-using DesignacoesReuniao.Infra.Extensions;
 using DesignacoesReuniao.Infra.Interfaces;
+using DesignacoesReuniao.Shared.Extensions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Globalization;

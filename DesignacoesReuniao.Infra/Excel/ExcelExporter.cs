@@ -1,6 +1,5 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Interfaces;
-using DocumentFormat.OpenXml.Bibliography;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Drawing;
@@ -98,10 +97,11 @@ namespace DesignacoesReuniao.Infra.Excel
             worksheet.Cells[1, 2].Value = "Sessão";
             worksheet.Cells[1, 3].Value = "Parte";
             worksheet.Cells[1, 4].Value = "Tempo (min)";
-            worksheet.Cells[1, 5].Value = "Designados";
+            worksheet.Cells[1, 5].Value = "Designado";
+            worksheet.Cells[1, 6].Value = "Ajudante";
 
             // Aplica borda mais espessa no cabeçalho
-            using (var range = worksheet.Cells[1, 1, 1, 5])
+            using (var range = worksheet.Cells[1, 1, 1, 6])
             {
                 range.Style.Border.Top.Style = ExcelBorderStyle.Thick;
                 range.Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
@@ -121,11 +121,11 @@ namespace DesignacoesReuniao.Infra.Excel
         private int AdicionarLinhaPresidenteOracaoInicial(ExcelWorksheet worksheet, Reuniao reuniao, int linhaAtual)
         {
             // Adiciona a linha para o Presidente
-            AdicionarLinha(worksheet, reuniao.Semana, SESSAO_TESOUROS_DA_PALAVRA_DE_DEUS, "Presidente", reuniao.Presidente, COR_TESOUROS_DA_PALAVRA_DE_DEUS, linhaAtual);
+            AdicionarLinha(worksheet, reuniao.Semana, SESSAO_TESOUROS_DA_PALAVRA_DE_DEUS, "Presidente", reuniao.Presidente?.ToString(), COR_TESOUROS_DA_PALAVRA_DE_DEUS, linhaAtual);
             linhaAtual++;
 
             // Adiciona a linha para a Oração Inicial
-            AdicionarLinha(worksheet, reuniao.Semana, SESSAO_TESOUROS_DA_PALAVRA_DE_DEUS, "Oração Inicial", reuniao.OracaoInicial, COR_TESOUROS_DA_PALAVRA_DE_DEUS, linhaAtual);
+            AdicionarLinha(worksheet, reuniao.Semana, SESSAO_TESOUROS_DA_PALAVRA_DE_DEUS, "Oração Inicial", reuniao.OracaoInicial?.ToString(), COR_TESOUROS_DA_PALAVRA_DE_DEUS, linhaAtual);
             linhaAtual++;
 
             return linhaAtual;
@@ -138,7 +138,7 @@ namespace DesignacoesReuniao.Infra.Excel
                 foreach (var parte in sessao.Partes)
                 {
                     string corFundo = ObterCorFundoPorSessao(sessao.TituloSessao);
-                    AdicionarLinha(worksheet, reuniao.Semana, sessao.TituloSessao, parte.TituloParte, string.Join(", ", parte.Designados), corFundo, linhaAtual, parte.TempoMinutos);
+                    AdicionarLinha(worksheet, reuniao.Semana, sessao.TituloSessao, $"{parte.IndiceParte}. {parte.TituloParte}" , parte.ObterNomesDesignadoEAjudante(), corFundo, linhaAtual, parte.TempoMinutos);
                     linhaAtual++;
                 }
             }
@@ -148,7 +148,7 @@ namespace DesignacoesReuniao.Infra.Excel
         private int AdicionarLinhaOracaoFinal(ExcelWorksheet worksheet, Reuniao reuniao, int linhaAtual)
         {
             // Adiciona a linha para a Oração Final
-            AdicionarLinha(worksheet, reuniao.Semana, SESSAO_NOSSA_VIDA_CRISTA, "Oração Final", reuniao.OracaoFinal, COR_NOSSA_VIDA_CRISTA, linhaAtual);
+            AdicionarLinha(worksheet, reuniao.Semana, SESSAO_NOSSA_VIDA_CRISTA, "Oração Final", reuniao.OracaoFinal?.ToString(), COR_NOSSA_VIDA_CRISTA, linhaAtual);
             linhaAtual++;
 
             return linhaAtual;
@@ -168,8 +168,8 @@ namespace DesignacoesReuniao.Infra.Excel
 
         private void AplicarCorDeFundo(ExcelWorksheet worksheet, int linha, string corHex)
         {
-            worksheet.Cells[linha, 1, linha, 5].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            worksheet.Cells[linha, 1, linha, 5].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml(corHex));
+            worksheet.Cells[linha, 1, linha, 6].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            worksheet.Cells[linha, 1, linha, 6].Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml(corHex));
         }
 
         private string ObterCorFundoPorSessao(string tituloSessao)
@@ -185,7 +185,7 @@ namespace DesignacoesReuniao.Infra.Excel
 
         private void AplicarBordaSeparadora(ExcelWorksheet worksheet, int linha)
         {
-            using (var range = worksheet.Cells[linha, 1, linha, 5])
+            using (var range = worksheet.Cells[linha, 1, linha, 6])
             {
                 range.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
                 range.Style.Border.Bottom.Color.SetColor(Color.Black);
@@ -194,7 +194,7 @@ namespace DesignacoesReuniao.Infra.Excel
 
         private void AplicarBordasTabela(ExcelWorksheet worksheet, int ultimaLinha)
         {
-            using (var range = worksheet.Cells[1, 1, ultimaLinha, 5])
+            using (var range = worksheet.Cells[1, 1, ultimaLinha, 6])
             {
                 range.Style.Border.Top.Style = ExcelBorderStyle.Thin;
                 range.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;

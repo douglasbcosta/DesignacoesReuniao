@@ -1,5 +1,4 @@
 ﻿using DesignacoesReuniao.Domain.Models;
-using DesignacoesReuniao.Infra.Extensions;
 using DesignacoesReuniao.Infra.Interfaces;
 using DesignacoesReuniao.Infra.Word;
 using iText.Forms;
@@ -69,7 +68,7 @@ namespace DesignacoesReuniao.Infra.Pdf
                         }
 
                         // Adiciona substituições para Estudante, Ajudante, Data, Título e Salão Principal
-                        if (parte.Designados.Count > 0 && !string.IsNullOrEmpty(parte.Designados[0]))
+                        if (parte.Designado != null && !string.IsNullOrEmpty(parte.Designado.NomeCompleto))
                         {
                             AdicionarSubstituicoes(substituicoes, parte, dataReuniao, indicePagina, ref indiceField);
                         }
@@ -99,11 +98,11 @@ namespace DesignacoesReuniao.Infra.Pdf
             // Estudante
 
             var nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
-            substituicoes.Add(new Substituicao(nomeField, parte.Designados.Any() ? parte.Designados[0].FormatarTextoComPrimeiraLetraMaiuscula() : ""));
+            substituicoes.Add(new Substituicao(nomeField, parte.Designado !=null ? parte.Designado.NomeCompleto: ""));
             indiceField++;
 
             // Ajudante
-            var ajudante = parte.Designados.Count > 1 ? parte.Designados[1].FormatarTextoComPrimeiraLetraMaiuscula() : "";
+            var ajudante = parte.Ajudante != null ? parte.Ajudante.NomeCompleto : "";
             nomeField = GetNomeField(indicePagina, TipoInput.Text, indiceField);
             substituicoes.Add(new Substituicao(nomeField, ajudante));
             indiceField++;

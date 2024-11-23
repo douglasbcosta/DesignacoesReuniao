@@ -1,8 +1,6 @@
 ﻿using DesignacoesReuniao.Domain.Models;
-using DesignacoesReuniao.Infra.Excel;
 using DesignacoesReuniao.Infra.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
 
 namespace DesignacoesReuniao.Web.Controllers
 {
@@ -95,10 +93,17 @@ namespace DesignacoesReuniao.Web.Controllers
                         {
                             foreach (var parteProgramada in sessaoProgramada.Partes)
                             {
-                                var parteImportada = sessaoImportada.Partes.FirstOrDefault(p => p.TituloParte == parteProgramada.TituloParte);
+                                var parteImportada = sessaoImportada.Partes.FirstOrDefault(p => p.TituloParte.Trim() == parteProgramada.TituloParte.Trim() && p.IndiceParte == parteProgramada.IndiceParte);
                                 if (parteImportada != null)
                                 {
-                                    parteProgramada.Designados = parteImportada.Designados;
+                                    if (parteImportada.ContemDesignado())
+                                    {
+                                        parteProgramada.AdicionarDesignado(parteImportada.Designado);
+                                    }
+                                    if (parteImportada.ContemAjudante())
+                                    {
+                                        parteProgramada.AdicionarDesignado(parteImportada.Ajudante);
+                                    }
                                     parteProgramada.TempoMinutos = parteImportada.TempoMinutos;
                                 }
                             }
