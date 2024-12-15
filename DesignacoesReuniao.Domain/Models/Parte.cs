@@ -64,7 +64,7 @@ namespace DesignacoesReuniao.Domain.Models
             }
             if (!string.IsNullOrEmpty(Ajudante?.NomeResumido))
             {
-                nomes += $"/{Ajudante.NomeResumido}";
+                nomes += $"/ {Ajudante.NomeResumido}";
             }
             return nomes;
         }

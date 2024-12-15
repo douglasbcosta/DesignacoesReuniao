@@ -86,7 +86,7 @@ namespace DesignacoesReuniao.Infra.Pdf
 
         private static DateOnly GetProximaTerca(DateOnly data)
         {
-            while (data.DayOfWeek != DayOfWeek.Tuesday)
+            while (data.DayOfWeek != DayOfWeek.Wednesday)
             {
                 data = data.AddDays(1);
             }

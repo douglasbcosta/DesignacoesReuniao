@@ -1,5 +1,7 @@
 ﻿using DesignacoesReuniao.Domain.Models;
 using DesignacoesReuniao.Infra.Repostories.Interface;
+using System.Globalization;
+using System.Text;
 
 namespace DesignacoesReuniao.Infra.Repostories
 {
@@ -16,14 +18,25 @@ namespace DesignacoesReuniao.Infra.Repostories
             {
                 return null;
             }
-            var palavras = nome.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
+            // Função auxiliar para normalizar strings sem acentos
+            string RemoveAcentos(string text) =>
+                string.Concat(text.Normalize(NormalizationForm.FormD)
+                                    .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark));
+
+            // Normalizar o nome de entrada
+            var palavras = RemoveAcentos(nome).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Procurar a pessoa removendo acentos também no NomeCompleto
             var pessoa = pessoas.FirstOrDefault(p =>
-                palavras.All(palavra => p.NomeCompleto.IndexOf(palavra, StringComparison.OrdinalIgnoreCase) >= 0));
-            if (pessoa != null) 
+                palavras.All(palavra =>
+                    RemoveAcentos(p.NomeCompleto).IndexOf(palavra, StringComparison.OrdinalIgnoreCase) >= 0));
+
+            if (pessoa != null)
             {
                 return pessoa;
             }
+
             return new Pessoa(nome, nome);
         }
 
@@ -53,28 +66,29 @@ namespace DesignacoesReuniao.Infra.Repostories
                 new Pessoa("Lucas Nunes dos Santos", "Lucas Santos"),
                 new Pessoa("Marcos Rossin", "Marcos Rossin"),
                 new Pessoa("Douglas Brisola da Costa", "Douglas Costa"),
+                new Pessoa("Gabriel Ramos de Oliveira", "Gabriel Oliveira"),
 
                 // Estudantes
                 new Pessoa("Doralice Santos Santana", "Doralice Santana"),
                 new Pessoa("Elizabeth Gomes da Silva", "Elizabeth Silva"),
                 new Pessoa("Luana Rodrigues de Sá", "Luana Sá"),
-                new Pessoa("Maria das Neves Patrício da", "Maria Patrício"),
-                new Pessoa("Maria José Gomes da Silva", "Maria José Silva"),
-                new Pessoa("Flávia Granado Viana Meira", "Flávia Meira"),
-                new Pessoa("BEATRIZ VILELA OLIVEIRA", "Beatriz Oliveira"),
+                new Pessoa("Maria das Neves Patrício", "Maria das Neves"),
+                new Pessoa("Maria José Gomes da Silva", "Maria Gomes"),
+                new Pessoa("Flávia Granado Viana Meira", "Flávia Granado "),
+                new Pessoa("Beatriz Vilela Oliveira", "Beatriz Oliveira"),
                 new Pessoa("Joana Santos Lessa", "Joana Lessa"),
                 new Pessoa("Maria Helena Oliveira", "Maria Helena"),
-                new Pessoa("Maria José de Morais", "Maria Morais"),
+                new Pessoa("Maria José de Morais", "Maria José"),
                 new Pessoa("Susana Granado Viana Meira", "Susana Meira"),
                 new Pessoa("Noemy do Carmo S.", "Noemy do Carmo"),
                 new Pessoa("Patricia Rossin", "Patricia Rossin"),
                 new Pessoa("Laídes Borges de Souza", "Laídes Souza"),
                 new Pessoa("Ana Paula Procópio", "Ana Procópio"),
-                new Pessoa("Carina Silva Rogeri Alves de", "Carina Alves"),
+                new Pessoa("Carina Silva Rogeri Alves", "Carina Alves"),
                 new Pessoa("Larissa Silva Borges", "Larissa Borges"),
                 new Pessoa("Ivanilde Souza e Silva", "Ivanilde Silva"),
                 new Pessoa("Juraci de Almeida Lisboa", "Juraci Lisboa"),
-                new Pessoa("Maria Aparecida Viera", "Maria Viera"),
+                new Pessoa("Maria Aparecida Viera", "Maria Aparecida Viera"),
                 new Pessoa("Maria Marta de Faria", "Marta Faria"),
                 new Pessoa("Munike Ferraz", "Munike Ferraz"),
                 new Pessoa("Simone Morais Ferraz", "Simone Ferraz"),
@@ -101,16 +115,25 @@ namespace DesignacoesReuniao.Infra.Repostories
                 new Pessoa("Josiane de Oliveira Pereira", "Josiane Pereira"),
                 new Pessoa("Regina Aparecida Cunha", "Regina Cunha"),
                 new Pessoa("Claudenísia Coelho de Souza", "Claudenísia Souza"),
-                new Pessoa("Elisete Timoteo Jesus da", "Elisete Jesus"),
-                new Pessoa("Isabelli Vasconcelos de", "Isabelli Vasconcelos"),
+                new Pessoa("Elisete Timoteo Jesus", "Elisete Jesus"),
+                new Pessoa("Isabelli Vasconcelos", "Isabelli Vasconcelos"),
                 new Pessoa("Katia Albuquerque A.", "Katia Albuquerque"),
                 new Pessoa("Elizier Moura", "Elizier Moura"),
                 new Pessoa("Lucimar Cardoso Menezes", "Lucimar Menezes"),
                 new Pessoa("Maria de Nazaré Gomes", "Maria Gomes"),
-                new Pessoa("Neuza Maria Bento Silva", "Neuza Silva")
+                new Pessoa("Neuza Maria Bento Silva", "Neuza Silva"),
+                new Pessoa("Mauro Ruiz Filho", "Mauro Ruiz"),
+                new Pessoa("João Vilela de Oliveira", "João Oliveira"),
+                new Pessoa("Artur Procópio", "Artur Procópio"),
+                new Pessoa("Joselito Cristino Leal", "Joselito Leal"),
+                new Pessoa("Adriano Viana Meira", "Adriano Meira"),
+                new Pessoa("Kelvin Silva Alves de Souza", "Kelvin Alves"),
+                new Pessoa("Michael Carlos Granado Oliveira Meira", "Michael Meira"),
+                new Pessoa("Paulo Sergio Gonzaga", "Paulo Sergio"),
+                new Pessoa("Arthur Morais Ferraz", "Arthur Ferraz"),
+                new Pessoa("Malvio de Moura", "Malvio de Moura"),
+
             };
-
-
         }
     }
 }
