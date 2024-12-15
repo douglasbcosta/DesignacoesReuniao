@@ -84,6 +84,13 @@
                             </select>
                         </div>
                         <div class="form-group mb-3">
+                            <label for="tipoExcel">Escolha qual o excel está importando:</label>
+                            <select class="form-control" id="tipoExcel" name="tipoExcel" required>
+                                <option value="template">Preencher Designações com excel template do mês</option>
+                                <option value="geral">Preencher Designações com excel geral</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
                             <label for="excelFile">Arquivo Excel:</label>
                             <input type="file" class="form-control" id="excelFile" name="excelFile" required>
                         </div>
@@ -171,6 +178,7 @@
 
         const month = document.getElementById('monthDesignacoes').value;
         const year = document.getElementById('yearDesignacoes').value;
+        const tipoExcel = document.getElementById('tipoExcel').value;
         const excelFile = document.getElementById('excelFile').files[0];
 
         if (!month || !year || !excelFile) {
@@ -182,7 +190,8 @@
         const formData = new FormData();
         formData.append('month', month);
         formData.append('year', year);
-        formData.append('excelFile', excelFile);
+        formData.append('tipoExcel', tipoExcel);
+        formData.append('excelFile', excelFile);        
 
         fetch('/Reunioes/PreencherDesignacoes', {
             method: 'POST',

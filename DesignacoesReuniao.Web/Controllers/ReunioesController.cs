@@ -52,7 +52,19 @@ namespace DesignacoesReuniao.Web.Controllers
 
         // Preencher designados das reuniões de um mês específico com base em arquivo excel
         [HttpPost]
-        public IActionResult PreencherDesignacoes(int month, int year, IFormFile excelFile)
+        public IActionResult PreencherDesignacoes(int month, int year, string tipoExcel, IFormFile excelFile)
+        {
+            if (tipoExcel == "template")
+            {
+                return PreencherDesignacoesModelo1(month, year, excelFile);
+            }
+            else
+            {
+                return PreencherDesignacoesModelo2(month, year, excelFile);
+            }
+        }
+
+        private IActionResult PreencherDesignacoesModelo1(int month, int year, IFormFile excelFile)
         {
             if (excelFile == null || excelFile.Length == 0)
                 return BadRequest("Arquivo Excel não fornecido.");
@@ -77,40 +89,48 @@ namespace DesignacoesReuniao.Web.Controllers
             var reunioesImportadas = _excelImporter.ImportarReunioesDeExcel(filePath);
             var reunioesProgramacao = _scraper.GetReunioes(year, month);
 
-            foreach (var reuniaoProgramada in reunioesProgramacao)
-            {
-                var reuniaoImportada = reunioesImportadas.FirstOrDefault(r => r.Semana == reuniaoProgramada.Semana);
-                if (reuniaoImportada != null)
-                {
-                    reuniaoProgramada.Presidente = reuniaoImportada.Presidente;
-                    reuniaoProgramada.OracaoInicial = reuniaoImportada.OracaoInicial;
-                    reuniaoProgramada.OracaoFinal = reuniaoImportada.OracaoFinal;
+            reunioesProgramacao = Reuniao.PreencherReunioes(reunioesProgramacao, reunioesImportadas);
 
-                    foreach (var sessaoProgramada in reuniaoProgramada.Sessoes)
-                    {
-                        var sessaoImportada = reuniaoImportada.Sessoes.FirstOrDefault(s => s.TituloSessao == sessaoProgramada.TituloSessao);
-                        if (sessaoImportada != null)
-                        {
-                            foreach (var parteProgramada in sessaoProgramada.Partes)
-                            {
-                                var parteImportada = sessaoImportada.Partes.FirstOrDefault(p => p.TituloParte.Trim() == parteProgramada.TituloParte.Trim() && p.IndiceParte == parteProgramada.IndiceParte);
-                                if (parteImportada != null)
-                                {
-                                    if (parteImportada.ContemDesignado())
-                                    {
-                                        parteProgramada.AdicionarDesignado(parteImportada.Designado);
-                                    }
-                                    if (parteImportada.ContemAjudante())
-                                    {
-                                        parteProgramada.AdicionarDesignado(parteImportada.Ajudante);
-                                    }
-                                    parteProgramada.TempoMinutos = parteImportada.TempoMinutos;
-                                }
-                            }
-                        }
-                    }
-                }
+            
+
+            var caminhoWord = _wordReplacer.PreencherReunioesEmModelo(month, year, reunioesProgramacao);
+            var caminhoPdf = PreencherPartesEstudantes(month, year, reunioesProgramacao);
+
+            // Retorna os caminhos dos arquivos para o front-end habilitar os botões de download
+            return Ok(new
+            {
+                wordPath = caminhoWord,
+                pdfPath = caminhoPdf
+            });
+        }
+
+        private IActionResult PreencherDesignacoesModelo2(int month, int year, IFormFile excelFile)
+        {
+            if (excelFile == null || excelFile.Length == 0)
+                return BadRequest("Arquivo Excel não fornecido.");
+
+            // Definir o caminho onde o arquivo será salvo no servidor
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
             }
+
+            // Gerar um nome de arquivo único para evitar conflitos
+            var filePath = Path.Combine(uploadsFolder, $"{year}_{month}_{excelFile.FileName}");
+
+            // Salvar o arquivo no servidor
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                excelFile.CopyTo(stream);
+            }
+
+            // Agora que o arquivo foi salvo, você pode passar o caminho completo para o método de importação
+            
+            var designacoesImportadas = _excelImporter.ImportarReunioesExcel(filePath, month);
+            var reunioesProgramacao = _scraper.GetReunioes(year, month);
+
+            
 
             var caminhoWord = _wordReplacer.PreencherReunioesEmModelo(month, year, reunioesProgramacao);
             var caminhoPdf = PreencherPartesEstudantes(month, year, reunioesProgramacao);
