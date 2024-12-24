@@ -2,13 +2,15 @@
 {
     public class Substituicao
     {
-        public Substituicao(string valorOriginal, string valorSubstituicao, string sessao = "", string tema = "")
+        public Substituicao(string valorOriginal, string valorSubstituicao, string sessao = "", string tema = "", string semana = "")
         {
             Sessao = sessao;
             ValorOriginal = valorOriginal ?? "";
             ValorSubstituicao = valorOriginal.Contains("Nome") ? valorSubstituicao : valorSubstituicao ?? "";
+            Semana = semana;
             Tema = tema;
         }
+        public string Semana { get; set; }
         public string Tema { get; set; }
         public string Sessao { get; set; }
         public string ValorOriginal { get; set; }

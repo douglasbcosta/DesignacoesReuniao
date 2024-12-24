@@ -61,6 +61,7 @@ namespace DesignacoesReuniao.Infra.Word
                     if (substituicao.ValorSubstituicao.Contains("Cântico"))
                     {
                         ReplaceCantico(body, substituicao.ValorSubstituicao);
+                        continue;
                     }
                     if (string.IsNullOrEmpty(substituicao.Sessao))
                     {
@@ -72,7 +73,7 @@ namespace DesignacoesReuniao.Infra.Word
                     }
                     else
                     {
-                        ReplacePrimeiraOcorrenciaNaSessaoETema(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao, substituicao.Sessao, substituicao.Tema);
+                        ReplacePrimeiraOcorrenciaNaSessaoETema(body, substituicao.ValorOriginal, substituicao.ValorSubstituicao, substituicao.Sessao, substituicao.Tema, substituicao.Semana);
                     }
                 }
             }
@@ -386,6 +387,7 @@ namespace DesignacoesReuniao.Infra.Word
                         if (text.Text.Contains("número"))
                         {
                             text.Text = text.Text.Replace("número", canticoAlteracao.Split(' ')[1]);
+                            return;
                         }
                     }
                 }
@@ -460,8 +462,9 @@ namespace DesignacoesReuniao.Infra.Word
             }
         }
 
-        private void ReplacePrimeiraOcorrenciaNaSessaoETema(Body? body, string textoOriginal, string textoAlterado, string sessao, string tema)
+        private void ReplacePrimeiraOcorrenciaNaSessaoETema(Body? body, string textoOriginal, string textoAlterado, string sessao, string tema, string semana)
         {
+            string semanaAtual = "";
             string sessaoAtual = "";
             string temaAtual = "";
             // Substitui os textos conforme o dicionário de substituições
@@ -471,16 +474,25 @@ namespace DesignacoesReuniao.Infra.Word
                 {
                     foreach (var text in run.Descendants<Text>())
                     {
-                        if (text.Text.Contains(tema))
+                        if (text.Text.Contains(semana.Trim()))
                         {
-                            temaAtual = text.Text;
+                            semanaAtual = text.Text;
                         }
                         if (Reuniao.GetSessoesReunioes().Contains(text.Text))
                         {
                             sessaoAtual = text.Text;
                         }
+                        if (!string.IsNullOrEmpty(temaAtual) && (!sessaoAtual.Contains(sessao) || !semanaAtual.Contains(semana)))
+                        {
+                            temaAtual = string.Empty;
+                        }
 
-                        if (sessaoAtual.Contains(sessao) && temaAtual.Contains(tema) && text.Text.Contains(textoOriginal))
+                        if (text.Text.Contains(tema) && sessaoAtual.Contains(sessao) && semanaAtual.Contains(semana))
+                        {
+                           temaAtual = text.Text;
+                        }
+
+                        if (sessaoAtual.Contains(sessao) && temaAtual.Contains(tema) && semanaAtual.Contains(semana) && text.Text.Contains(textoOriginal))
                         {
                             text.Text = text.Text.Replace(text.Text, textoAlterado);
                             return;
@@ -513,7 +525,7 @@ namespace DesignacoesReuniao.Infra.Word
                 {
                     parte.TituloParte = $" {parte.TituloParte.Trim()}";
                     GerarSubstituicoesTesouros(substiticoes, sessao, parte);
-                    GerarSubstituicoesMinisterio(substiticoes, sessao, parte);
+                    GerarSubstituicoesMinisterio(substiticoes, sessao, parte, reunioes.Semana);
                     GerarSubstituicoesVidaCrista(substiticoes, sessao, parte);
                 }
                 if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[1])
@@ -573,7 +585,7 @@ namespace DesignacoesReuniao.Infra.Word
             }
         }
 
-        private static void GerarSubstituicoesMinisterio(List<Substituicao> substiticoes, Sessao sessao, Parte parte)
+        private static void GerarSubstituicoesMinisterio(List<Substituicao> substiticoes, Sessao sessao, Parte parte, string semana)
         {
             if (sessao.TituloSessao == Reuniao.GetSessoesReunioes()[1])
             {
@@ -582,12 +594,12 @@ namespace DesignacoesReuniao.Infra.Word
                 substiticoes.Add(new Substituicao("Nome/Nome", "", sessao.TituloSessao));
                 if (parte.TempoMinutos > 5)
                 {
-                    substiticoes.Add(new Substituicao("Estudante/ajudante", "", sessao.TituloSessao, parte.TituloParte));
+                    substiticoes.Add(new Substituicao("Estudante/ajudante", "", sessao.TituloSessao, parte.TituloParte, semana));
                 }
 
                 if (!parte.ContemAjudante() || parte.TituloParte.Contains("Discurso"))
                 {
-                    substiticoes.Add(new Substituicao("Estudante/ajudante", "Estudante", sessao.TituloSessao, parte.TituloParte));
+                    substiticoes.Add(new Substituicao("Estudante/ajudante", "Estudante", sessao.TituloSessao, parte.TituloParte, semana));
                 }
 
                 substiticoes.Add(new Substituicao("Nome/Nome", parte.ObterNomesDesignadoEAjudante(), sessao.TituloSessao));
