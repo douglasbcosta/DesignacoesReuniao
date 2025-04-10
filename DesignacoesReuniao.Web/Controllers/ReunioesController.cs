@@ -130,7 +130,7 @@ namespace DesignacoesReuniao.Web.Controllers
             var designacoesImportadas = _excelImporter.ImportarReunioesExcel(filePath, month);
             var reunioesProgramacao = _scraper.GetReunioes(year, month);
 
-            
+            reunioesProgramacao = Reuniao.PreencherReunioes(reunioesProgramacao, designacoesImportadas);
 
             var caminhoWord = _wordReplacer.PreencherReunioesEmModelo(month, year, reunioesProgramacao);
             var caminhoPdf = PreencherPartesEstudantes(month, year, reunioesProgramacao);

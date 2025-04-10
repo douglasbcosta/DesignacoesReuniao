@@ -75,7 +75,10 @@
             {
                 semana++;
                 var designacoesSemanaImportadas = designacoesImportadas.Where(r => semana == r.Semana).ToList();
-
+                if(designacoesSemanaImportadas.Count() == 0)
+                {
+                    continue;
+                }
                 reuniaoProgramada.Presidente = designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == "P").Designado;
 
                 foreach (var sessaoProgramada in reuniaoProgramada.Sessoes)
@@ -92,6 +95,15 @@
                         int ordemParte = 1;
                         foreach (var parte in sessaoProgramada.Partes)
                         {
+                            if (parte.TituloParte.Contains("Explicando suas crenças"))
+                            {
+                                var parteDiscurso = designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == "D" && d.Tipo.Contains("Estudante"));
+                                if(parteDiscurso?.Designado != null)
+                                {
+                                    parte.AdicionarDesignado(parteDiscurso?.Designado);
+                                    continue;
+                                }
+                            }
 
                             if (parte.TituloParte.Contains("Discurso"))
                             {
@@ -127,6 +139,11 @@
                         int ordemParte = 1;
                         foreach (var parte in sessaoProgramada.Partes)
                         {
+                            if (parte.SoVideo)
+                            {
+                                parte.AdicionarDesignado(designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == "P").Designado);
+                                continue;
+                            }   
                             if (parte.TituloParte.Contains("Necessidades locais"))
                             {
                                 parte.AdicionarDesignado(designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == "N").Designado);
@@ -137,6 +154,15 @@
                             {
                                 parte.AdicionarDesignado(designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == "E").Designado);
                                 continue;
+                            }
+                            if (ordemParte == 2)
+                            {
+                                var designadoSegundaParte = designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == "1..")?.Designado;
+                                if (designadoSegundaParte != null)
+                                {
+                                    parte.AdicionarDesignado(designadoSegundaParte);
+                                    continue;
+                                }
                             }
 
                             var pessoa = designacoesSemanaImportadas.FirstOrDefault(d => d.Parte == ordemParte.ToString() && d.Tipo.Contains("Anciãos"));

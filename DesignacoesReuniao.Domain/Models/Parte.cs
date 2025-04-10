@@ -17,11 +17,16 @@ namespace DesignacoesReuniao.Domain.Models
             IndiceParte = indiceParte;
             TituloParte = tituloParte;
             TempoMinutos = tempoMinutos;
+            if(tituloParte.Contains("Realizações da Organização", StringComparison.OrdinalIgnoreCase))
+            {
+                SoVideo = true;
+            }
         }
 
         public int IndiceParte { get; set; }
         public string TituloParte { get; set; }        
         public int TempoMinutos { get; set; }
+        public bool SoVideo { get; private set; }
         public Pessoa Designado { get; set; }
         public Pessoa Ajudante { get; set; }
 

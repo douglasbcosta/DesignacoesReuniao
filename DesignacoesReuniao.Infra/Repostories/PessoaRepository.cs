@@ -114,13 +114,13 @@ namespace DesignacoesReuniao.Infra.Repostories
                 new Pessoa("Vera Lúcia Bastocellis Ruiz", "Vera Ruiz"),
                 new Pessoa("Josiane de Oliveira Pereira", "Josiane Pereira"),
                 new Pessoa("Regina Aparecida Cunha", "Regina Cunha"),
-                new Pessoa("Claudenísia Coelho de Souza", "Claudenísia Souza"),
+                new Pessoa("Claudenísia Coelho de Souza", "Claudenísia Coelho"),
                 new Pessoa("Elisete Timoteo Jesus", "Elisete Jesus"),
                 new Pessoa("Isabelli Vasconcelos", "Isabelli Vasconcelos"),
                 new Pessoa("Katia Albuquerque A.", "Katia Albuquerque"),
                 new Pessoa("Elizier Moura", "Elizier Moura"),
                 new Pessoa("Lucimar Cardoso Menezes", "Lucimar Menezes"),
-                new Pessoa("Maria de Nazaré Gomes", "Maria Gomes"),
+                new Pessoa("Maria de Nazaré Gomes", "Nazaré  Gomes"),
                 new Pessoa("Neuza Maria Bento Silva", "Neuza Silva"),
                 new Pessoa("Mauro Ruiz Filho", "Mauro Ruiz"),
                 new Pessoa("João Vilela de Oliveira", "João Oliveira"),
@@ -132,6 +132,7 @@ namespace DesignacoesReuniao.Infra.Repostories
                 new Pessoa("Paulo Sergio Gonzaga", "Paulo Sergio"),
                 new Pessoa("Arthur Morais Ferraz", "Arthur Ferraz"),
                 new Pessoa("Malvio de Moura", "Malvio de Moura"),
+                new Pessoa("Myrele Silva","Myrele Silva")
 
             };
         }
